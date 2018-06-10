@@ -1,1 +1,2 @@
-from flask import app
+from app import *
+
