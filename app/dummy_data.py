@@ -3,6 +3,7 @@ from datetime import datetime, date, time, timedelta
 from app.models import *
 from app import db
 
+#models.EnterpriseAgreement.query.all()
 
 def dummy_enterprise_agreements():
 
@@ -39,7 +40,7 @@ def dummy_enterprise_agreements():
         db.session.add(ea)
     db.session.commit()
 
-def dummy_skillw():
+def dummy_skill():
 
     skills = []
 
