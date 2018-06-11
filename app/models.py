@@ -2,68 +2,81 @@ from time import time
 from flask import current_app, url_for
 from flask_login import UserMixin
 
-from app import db, login
+from app import db
 
-class Calendar(db.Model):
-    #__tablename__ = 'user'
+#https://stackoverflow.com/questions/25632905/flask-sqlalchemy-relationship
+# relationship goes on the ONE SIDE. 
+#understanding backref http://docs.sqlalchemy.org/en/latest/orm/backref.html
+# backref second argument describes a callback to the join. not the join it self. It is a REFERENCE in the other table to the relationship
+
+class Cal123asdas(db.Model):
+    #__tablename__ = 'usasdaer'
     id = db.Column(db.Integer, primary_key=True)
 
 class EnterpriseAgreement(db.Model):
+
+    __tablename__ = "enterpriseagreement"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(8), unique=True)
     min_periods = db.Column(db.Integer)
     max_periods = db.Column(db.Integer)
     max_periods_overtime = db.Column(db.Integer)
     wage = db.Column(db.Float)
-    wage_overtime = db.Colum(db.Float)
-    employee = db.relationship("Employee", backref = 'enterpriseagreement', lazy='dynamic') 
+    wage_overtime = db.Column(db.Float)
+    employees = db.relationship("Employee", backref = 'agreements', lazy='dynamic') 
+    #employees =  db.Column(db.Integer, db.ForeignKey('employee.id'))
 
 class Skill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(8), unique=True)
-    skill_assignment = db.relationship("SkillAssignment", backref="skill", lazy='dynamic')
-    shedule_requirements = db.relationship("ScheduleRequirement", backref="skill", lazy='dynamic')
+    skill_assignment = db.relationship("SkillAssignment", backref="skills", lazy='dynamic')
+    shedule_requirements = db.relationship("ScheduleRequirement", backref="skills", lazy='dynamic')
 
 class Period(db.Model):
+    
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     day = db.Column(db.String(10))
     week = db.Column(db.Integer)
-    shifts = db.relationship('Shift', backref="period", lazy='dynamic') 
+    shifts = db.relationship('Shift', backref="periods", lazy='dynamic') 
+    schedule_requirements = db.relationship('ScheduleRequirement', backref="periods", lazy='dynamic') 
 
 class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    shedule_allocation = db.relationship('Shift', backref='shift', lazy='dynamic')
-    preferences = db.relationship('Preference', backref='shift', lazy='dynamic')
+    period = db.Column(db.Integer, db.ForeignKey('period.id'))
+    shedule_allocation = db.relationship('ScheduleAllocation', backref='shifts', lazy='dynamic')
+    preferences = db.relationship('Preference', backref='shifts', lazy='dynamic')
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True)
     email = db.Column(db.String(64), unique=True)
     password_hash = db.Column(db.String(64))
-    agreement = db.Column(db.string(8), foreign_key = 'enterpriseagreement.name', nullable=False)
-    skills = db.relationship('SkillAssignment', backref='employee', lazy='dynamic') 
-    preferences = db.relationship('Preferences', backref='employee', lazy='dynamic')
-    schedule_allocation = db.relationship('ScheduleAllocation', backref='employee', lazy='dynamic')
+    agreement = db.Column(db.Integer, db.ForeignKey('enterpriseagreement.id'))
+    #agreement = db.relationship('EnterpriseAgreement', backref = 'employee', lazy=True)
+    skills = db.relationship('SkillAssignment', backref='employees', lazy='dynamic') 
+    preferences = db.relationship('Preference', backref='employees', lazy='dynamic')
+    schedule_allocation = db.relationship('ScheduleAllocation', backref='employees', lazy='dynamic')
 
 class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    shift = db.relationship('Shift', backref='preference', lazy='dynamic') #
-    employee = db.replationship('Employee', backref='preference', lazy='dynamic') #
+    employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    shift = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
+    preference_level = db.Column(db.Integer)
 
 class SkillAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    skill = db.Column(db.string(8), foreign_key = 'skill.name', nullable=False)
-    Employee = db.Column(db.string(8), foreign_key = 'employee.name', nullable=False)
+    skill = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
+    Employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
 
 class ScheduleRequirement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    period = db.Column(db.Integer, foreign_key = 'Period.id', nullable=False)
-    requirement = db.Column(db.string(8), foreign_key = 'skill.name', nullable=False)
+    period = db.Column(db.Integer, db.ForeignKey('period.id'), nullable=False)
+    requirement = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
 
 class ScheduleAllocation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    employee = db.Column(db.string(8), foreign_key = 'employee.username', nullable=False)
-    shift = db.Column(db.string(8), foreign_key = 'shift.id', nullable=False)
+    employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    shift = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
 

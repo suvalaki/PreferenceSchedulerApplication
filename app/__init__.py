@@ -18,6 +18,9 @@ class Config(object):
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
+
+from app import models
+
 migrate = Migrate(app, db)
 
 #@app.shell_context_processor
