@@ -2,6 +2,7 @@ from faker import Faker
 from datetime import datetime, date, time, timedelta
 from app.models import *
 from app import db
+from random import randint
 
 #models.EnterpriseAgreement.query.all()
 
@@ -71,7 +72,7 @@ def dummy_skill():
 
     for skill in skills:
         db.session.add(skill)
-        db.session.commit()
+    db.session.commit()
 
 def dummy_periods(start_datetime, end_datetime, periods_per_hour):
 
@@ -93,16 +94,38 @@ def dummy_periods(start_datetime, end_datetime, periods_per_hour):
             week = week_id
         ))
 
+        curr_id +=1
         curr_datetime += period_length
 
         if curr_id % 168 == 0: 
             week_id += 1
 
+        
+
     for period in periods:
         db.session.add(period)
     db.session.commit()
         
+def dummy_employee(n):
 
+    fake = Faker()
+    #max_EAs = db.session.execute(
+    #    "SELECT MAX(enterpriseagreement.id) FROM enterpriseagreement").first()
+    max_EAs = db.session.query(db.func.max(EnterpriseAgreement.id)).first()[0]
+
+    for i in range(n):
+
+        name = fake.first_name()
+        surname = fake.last_name()
+
+        db.session.add(Employee(
+            id = i,
+            username = name,
+            email = name+'_'+surname+'@fake.com',
+            password_hash = 'asda',
+            agreement = randint(1,max_EAs)
+        ))
     
+    db.session.commit()
 
 
