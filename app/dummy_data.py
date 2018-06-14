@@ -100,8 +100,6 @@ def dummy_periods(start_datetime, end_datetime, periods_per_hour):
         if curr_id % 168 == 0: 
             week_id += 1
 
-        
-
     for period in periods:
         db.session.add(period)
     db.session.commit()
@@ -109,8 +107,6 @@ def dummy_periods(start_datetime, end_datetime, periods_per_hour):
 def dummy_employee(n):
 
     fake = Faker()
-    #max_EAs = db.session.execute(
-    #    "SELECT MAX(enterpriseagreement.id) FROM enterpriseagreement").first()
     max_EAs = db.session.query(db.func.max(EnterpriseAgreement.id)).first()[0]
 
     for i in range(n):
