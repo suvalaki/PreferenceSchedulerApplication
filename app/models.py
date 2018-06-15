@@ -4,9 +4,9 @@ from flask_login import UserMixin
 
 from app import db
 
-#https://stackoverflow.com/questions/25632905/flask-sqlalchemy-relationship
+# https://stackoverflow.com/questions/25632905/flask-sqlalchemy-relationship
 # relationship goes on the ONE SIDE. 
-#understanding backref http://docs.sqlalchemy.org/en/latest/orm/backref.html
+# understanding backref http://docs.sqlalchemy.org/en/latest/orm/backref.html
 # backref second argument describes a callback to the join. not the join it self. It is a REFERENCE in the other table to the relationship
 
 class Cal123asdas(db.Model):
@@ -33,20 +33,26 @@ class Skill(db.Model):
     shedule_requirements = db.relationship("ScheduleRequirement", backref="skills", lazy='dynamic')
 
 class Period(db.Model):
-    
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     day = db.Column(db.String(10))
     week = db.Column(db.Integer)
-    shifts = db.relationship('Shift', backref="periods", lazy='dynamic') 
+    shift = db.relationship('Shift', backref="periods", lazy='dynamic') 
+    shift_periods = db.relationship('ShiftPeriods', backref="periods", lazy='dynamic') 
     schedule_requirements = db.relationship('ScheduleRequirement', backref="periods", lazy='dynamic') 
 
 class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    period = db.Column(db.Integer, db.ForeignKey('period.id'))
+    start_period = db.Column(db.Integer, db.ForeignKey('period.id'))
+    shift_length = db.Column(db.Integer)
     shedule_allocation = db.relationship('ScheduleAllocation', backref='shifts', lazy='dynamic')
     preferences = db.relationship('Preference', backref='shifts', lazy='dynamic')
+
+class ShiftPeriods(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    period = db.Column(db.Integer, db.ForeignKey('period.id'))
+    shift = db.Column(db.Integer, db.ForeignKey('shift.id'))
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,7 +74,7 @@ class Preference(db.Model):
 class SkillAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     skill = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
-    Employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
 
 class ScheduleRequirement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -79,4 +85,3 @@ class ScheduleAllocation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     shift = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
-
