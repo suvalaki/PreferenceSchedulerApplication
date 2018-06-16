@@ -1,12 +1,16 @@
 # http://flask.pocoo.org/docs/1.0/views/
 # https://ourcodeworld.com/articles/read/434/top-5-best-free-jquery-and-javascript-dynamic-gantt-charts-for-web-applications
 
+#https://github.com/wbkd/awesome-d3
+
 from flask import render_template, json
 from flask.views import View, MethodView
 from app import app
 from app import db, models
 import random
 import json
+import matplotlib
+import matplotlib.cm as cm
 
 def random_color():
     rgbl=[255,0,0]
@@ -36,11 +40,20 @@ class PeriodChart(View):
 
         datasets = []
 
+        #colormap 
+        # https://stackoverflow.com/questions/28752727/map-values-to-colors-in-matplotlib
+
+        min_c = min(skills)
+        max_c = max(skills)
+
+        norm_c = matplotlib.colors.Normalize(vmin=min_c,vmax=max_c, clip=True)
+        mapper_c = cm.ScalarMappable(norm_c,cmap=cm.Blues_r)
+
         # itterateively build a dictionairy to be passed to json
         for s in skills:
 
             label = db.session.query(models.Skill.name).filter_by(id = int(s)).first()[0]
-            backbroundColor = 'rgba(255, 99, 132, 0.2)'
+            backgroundColor = "rgba"+str(tuple([x[0] * x[1] for x in zip(mapper_c.to_rgba(s), [255,255,255,1])]))
             series = [x[0] for x in db.session.query(
                 db.func.count(models.ScheduleRequirement.requirement))\
                         .filter_by(requirement = int(s))\
@@ -50,7 +63,7 @@ class PeriodChart(View):
 
             datasets.append({
                 'label': label,
-                'backbroundColor': 'rgba(255, 99, 132, 0.2)',
+                'backgroundColor': backgroundColor,
                 'data': series
             })
 
@@ -62,6 +75,10 @@ class PeriodChart(View):
             'datasets':datasets
         }
 
+
+
         return render_template('period_chart.html', dataset = data  )
+
+
 
 app.add_url_rule('/chart/', view_func=PeriodChart.as_view('period_chart'))
