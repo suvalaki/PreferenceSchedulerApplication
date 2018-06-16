@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div width="800" height="500" style="overflow:scroll;">
+<canvas id="canvas" width="7000" height="524" style="overflow:scroll;" class="chartjs-render-monitor" style="display: block; width: 1049px; height: 524px;"></canvas>
+</div>
+
+        <script>
+        
+		var barChartData = {{ dataset|tojson }};
+		window.onload = function() {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartData,
+				options: {
+					title: {
+						display: true,
+						text: 'Chart.js Bar Chart - Stacked'
+					},
+					tooltips: {
+						mode: 'index',
+						intersect: false
+					},
+					responsive: false,
+					scales: {
+						xAxes: [{
+							stacked: true,
+						}],
+						yAxes: [{
+							stacked: true
+						}]
+					}
+				}
+			});
+		};
+	    </script>
+
+{% endblock %}

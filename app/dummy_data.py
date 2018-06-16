@@ -242,7 +242,7 @@ def __init__(employee_number=20,
     dummy_shifts(start_datetime, end_datetime, periods_per_hour, shift_length)
     dummy_skill_assignment(ratio)
     dummy_preference(max_preference)
-    #dummy_schedule_requirement(requirement)
+    dummy_schedule_requirement(requirement)
 
 if __name__ == "__main__": 
     __init__()

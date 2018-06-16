@@ -5,3 +5,4 @@
     - 
     - calendar views
     - set preference views
+    - shifts edit view

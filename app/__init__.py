@@ -9,7 +9,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
+    DEBUG=True
 
 
 #app.create_app()
@@ -23,6 +23,7 @@ from app import models
 
 migrate = Migrate(app, db)
 
+from app import routes
 #@app.shell_context_processor
 #def make_shell_context():
-#    return {}
+#    return {}asdas
