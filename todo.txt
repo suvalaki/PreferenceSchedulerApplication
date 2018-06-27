@@ -6,3 +6,4 @@
     - calendar views
     - set preference views
     - shifts edit view
+    - extend jsgantt to accept variable period lengths

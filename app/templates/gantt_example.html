@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div style="position:relative" class="gantt" id="GanttChartDIV"></div>
+<script>
+    
+    // https://github.com/jsGanttImproved/jsgantt-improved/issues/87
+
+    var g = new JSGantt.GanttChart(document.getElementById('GanttChartDIV'), 'day');
+    
+    if( g.getDivId() != null ) {
+    g.setCaptionType('Complete');
+    g.setQuarterColWidth(36);
+
+    g.AddTaskItem(new JSGantt.TaskItem(1, 'Define Chart API','',          '',          'ggroupblack','', 0, 'Brian', 0,  1,0,1,'','','Some Notes text',g));
+    g.AddTaskItem(new JSGantt.TaskItem(2,'Chart Object',    '2016-02-20','2016-02-20','gmilestone', '', 1, 'Shlomy',100,0,1,1,'','','',g));
+    g.AddTaskItem(new JSGantt.TaskItem(pID=3, pName="Chart_object 2", 
+                                            pStart='2016-02-20', pEnd='2016-02-20', pColor='ggroupblack', pLink='', 
+                                            pMile=0, pRes='', pComp=0, pGroup=0, pParent=0, pOpen=1, pDepend=null, pCaption=null, pNotes=null, pGantt = g));           
+    
+
+    g.Draw();
+    }
+    else
+    {
+    alert("Error, unable to create Gantt Chart");
+    }
+    
+    </script>
+{% endblock %}

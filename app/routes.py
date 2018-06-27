@@ -80,5 +80,17 @@ class PeriodChart(View):
         return render_template('period_chart.html', dataset = data  )
 
 
+class ShiftGantt(View):
+
+    #Gantt Charts
+    # https://ourcodeworld.com/articles/read/434/top-5-best-free-jquery-and-javascript-dynamic-gantt-charts-for-web-applications
+    # https://frappe.io/gantt
+    # https://dhtmlx.com/blog/d3-gantt-charts-vs-dhtmlx-gantt/
+
+
+    def dispatch_request(self):
+        return render_template('gantt_example.html')
+
 
 app.add_url_rule('/chart/', view_func=PeriodChart.as_view('period_chart'))
+app.add_url_rule('/gantt/', view_func=ShiftGantt.as_view('gantt_chart'))

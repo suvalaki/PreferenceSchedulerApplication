@@ -1,0 +1,274 @@
+<!doctype html>
+<html>
+    <head>
+
+    
+    </head>
+
+<body>
+
+    <div class="testclass"></div>
+
+    <div class="timeline-base" style="position:relative"></div>
+
+    <script type="text/javascript">
+    
+        timelineDivider = function(containerNode, data, styleOptions)
+        {
+
+            var numRow = length(data);
+            var headerTuples = length(data[0]['time']);
+            var headerHight = headerTuples * styleOptions['titleTuple_height'].match(/(\d*\.?\d*)(.*)/)[1] + styleOptions['titleTuple_height'].match(/(\d*\.?\d*)(.*)/)[2]
+            
+
+            var headerNullSpace = document.createElement('div');
+            Object.assign(headerNullSpace.style,{
+                'height': headerHight
+            });
+            var headerLabelSpace = dodument.createElement('div');
+            Object.assign(headerLabelSpace.style,{
+                'height': headerHight
+            });
+            var dataRowTitleSpace = document.createElement('div');
+            Object.assign(dataRowTitleSpace.style,{
+
+            });
+            var dataSpace = document.createElement('div');
+            Object.assign(dataSpace.style,{
+
+            });
+        }
+
+        dataRowTitles = function(containerNode, numRow, styleOptions)
+        {
+
+        }
+
+        var topRowBorder = (i,b) => { if (i !== 0){ return b.match(/(\d*\.?\d*)(.*)/)[1]/2 + b.match(/(\d*\.?\d*)(.*)/)[2] }else{ return b } };
+
+        dataGrid = function(containerNode, numRow, numColumn, styleOptions)
+        {
+            
+
+            var tableNode = document.createElement('div');
+            for (var j=0; j<numRow; j++)
+            {
+                var rowNode = document.createElement('div');
+
+                Object.assign(rowNode.style,{ 
+                    'height': styleOptions['dataRow_height'],
+                    'width': numColumn *  styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[1] + styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[2],
+                    'margin': '0px 0px 0px 0px',
+                    'padding': '0px 0px 0px 0px',
+                    'border-width':'0px 0px 0px 0px',
+                    'display': 'block',
+                    'box-sizing': 'border-box'
+                });
+
+                for (var i=0; i<numColumn; i++)
+                {
+                    var dataNode = document.createElement('div');
+                    Object.assign(dataNode.style, {
+                        'width': styleOptions['dataCell_width'], 
+                        'height': styleOptions['dataCell_height'],
+                        'box-sizing': 'border-box', // makes 100% cover all bounding properties too
+                        'margin': styleOptions['dataCell_margin'],
+                        'padding': styleOptions['dataCell_padding'],
+                        'border-top-width': topRowBorder(j, styleOptions['dataCell_border-width']),
+                        'border-bottom-width': topRowBorder(numRow - j-1,styleOptions['dataCell_border-width']),
+                        'border-left-width': topRowBorder(i,styleOptions['dataCell_border-width']),
+                        'border-right-width': topRowBorder(numColumn -i-1, styleOptions['dataCell_border-width']),
+                        'border-color': styleOptions['dataCell_border-color'],
+                        'border-style': styleOptions['dataCell_border-style'],
+                        'display': styleOptions['dataCell_display'], // important to make horizontal
+                    });
+                    rowNode.appendChild(dataNode);
+                }
+                tableNode.appendChild(rowNode);   
+            }
+            containerNode.appendChild(tableNode);
+        }
+
+        
+        dataBar = function(containerNode, rowNum, numColumn, periodStart, periodEnd, styleOptions)
+        {
+            var topBottomOffset = 0.1;
+            var rowHeight = styleOptions['dataRow_height'].match(/(\d*\.?\d*)(.*)/)[1];
+            var heightUnit = styleOptions['dataRow_height'].match(/(\d*\.?\d*)(.*)/)[2];
+            var cellWidth =  styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[1];
+            var cellWidthUnit =  styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[2];
+            
+            var barHeight = rowHeight * (1 - 2* topBottomOffset);
+
+            var dataBarDiv = document.createElement('div');
+            Object.assign(dataBarDiv.style,{
+                'position':'absolute',
+                'height': barHeight + heightUnit,   
+                'top': - ( rowNum - topBottomOffset ) * rowHeight + heightUnit ,
+                'left': periodStart * cellWidth + cellWidthUnit,
+                'width': ( periodEnd - periodStart ) * cellWidth + cellWidthUnit,
+                'background-color':'#64b2bc',
+                'border-radius':'3px',
+                'box-sizing':'border-box',
+            });
+            
+            containerNode.appendChild(dataBarDiv);
+        }
+
+        var styleOptions = {
+            'dataCell_width':'77px',
+            'dataCell_height': '100%',
+            'dataCell_margin': '0px 0px 0px 0px',
+            'dataCell_padding': '0px 0px 0px 0px',
+            'dataCell_border-width': '1px',
+            'dataCell_border-color': '#eae9e5',
+            'dataCell_border-style': 'solid',
+            'dataCell_display': 'inline-block',
+            'dataRow_height': '26px',
+            'titleTuple_height': '100px'
+        };
+
+        dataBarAssignment = function(containerNode, numRow, numCol, data, styleOptions)
+        {
+            var barContainer = document.createElement('div')
+            Object.assign(barContainer.style,{
+            'position':'absolute'
+            });
+
+            for (var i=0; i<numRow; i++)
+            {
+                var dat = data[i];
+                dataBar(barContainer, numRow - i, numCol, dat['start_period'], dat['end_period'], styleOptions);
+            }
+            containerNode.appendChild(barContainer);
+        }
+
+        dataBarGrid = function(containerNode, data, axisTuples, styleOptions)
+        {
+            var numRow = data.length;
+            var numCol = axisTuples.length;
+
+            dataGrid(containerNode, numRow, numCol, styleOptions);
+            dataBarAssignment(containerNode, numRow, numCol, data, styleOptions);
+
+        }
+
+        listCount = function(arr)
+        {
+            var counts = {};
+
+            for (var i = 0; i < arr.length; i++) 
+            {
+            var num = arr[i];
+            counts[num] = counts[num] ? counts[num] + 1 : 1;
+            }
+            return counts;
+        }
+
+        headerTupleRow = function(containerNode, numCol, axisLevel, styleOptions)
+        {
+            var rowHeight = styleOptions['dataRow_height'].match(/(\d*\.?\d*)(.*)/)[1];
+            var heightUnit = styleOptions['dataRow_height'].match(/(\d*\.?\d*)(.*)/)[2];
+            var cellWidth =  styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[1];
+            var cellWidthUnit =  styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[2];
+
+            var counts = listCount(axisLevel);
+            var countsKeys = Object.keys(counts);
+            var numHeaderCol = countsKeys.length;
+
+            var rowNode = document.createElement('div');
+
+            Object.assign(rowNode.style,{ 
+                'height': styleOptions['dataRow_height'],
+                'width': numCol *  styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[1] + styleOptions['dataCell_width'].match(/(\d*\.?\d*)(.*)/)[2],
+                'margin': '0px 0px 0px 0px',
+                'padding': '0px 0px 0px 0px',
+                'border-width':'0px 0px 0px 0px',
+                'display': 'block',
+                'box-sizing': 'border-box'
+            });
+
+            console.log(counts);
+
+            for (var i=0; i<numHeaderCol; i++)
+            {
+                var dataNode = document.createElement('div');
+                Object.assign(dataNode.style, {
+                    'width': cellWidth * counts[countsKeys[i]] + cellWidthUnit, 
+                    'height': styleOptions['dataCell_height'],
+                    'box-sizing': 'border-box', // makes 100% cover all bounding properties too
+                    'margin': styleOptions['dataCell_margin'],
+                    'padding': styleOptions['dataCell_padding'],
+                    'border-color': styleOptions['dataCell_border-color'],
+                    'border-style': styleOptions['dataCell_border-style'],
+                    'display': styleOptions['dataCell_display'], // important to make horizontal
+                });
+                dataNode.innerText = countsKeys[i];
+                rowNode.appendChild(dataNode);
+            }
+            containerNode.appendChild(rowNode);   
+
+        }
+
+        headerTupleGrid = function(containerNode, axisTuples, styleOptions)
+        {
+            var numCol = axisTuples.length;
+            var tupleDepth = axisTuples[0].length;
+            var headerNode = document.createElement('div');
+            for (var i =0; i< tupleDepth; i++ )
+            {   
+                var axisLevel = [];
+                for (var j=0; j<numCol; j++)
+                {
+                    axisLevel.push(axisTuples[j][i]);
+                }
+
+                console.log(axisLevel)
+
+                headerTupleRow(headerNode, numCol, axisLevel, styleOptions);
+               
+            }
+            containerNode.appendChild(headerNode);
+        }
+
+        dummyPeriods = [[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16]];
+        dummyPeriods2 = [[1,1],
+                         [1,2],
+                         [1,3],
+                         [1,4],
+                         [2,1],
+                         [2,2],
+                         [2,3],
+                         [2,4],
+                         [2,5],
+                         [2,6],
+                         [2,7]]
+
+        dummyData = [{
+            start_period:1,
+            end_period:3,
+        },{
+            start_period:2,
+            end_period:4,
+        },{
+            start_period:1,
+            end_period:6,
+        },{
+            start_period:4,
+            end_period:7,
+        }];
+
+        var timeline = document.querySelector('.timeline-base');
+        Object.assign(timeline.style, {
+            'overflow-x': 'auto',
+            'overflow-y': 'hidden',
+            'padding-bottom': '1px'
+        });
+
+        headerTupleGrid(timeline, dummyPeriods2, styleOptions);
+        dataBarGrid(timeline, dummyData, dummyPeriods, styleOptions);
+
+    </script>
+
+</body>
+</html>
