@@ -192,9 +192,17 @@
 
             for (var i=0; i<numHeaderCol; i++)
             {
+                var colSpan = 0;
+                var j = 0;
+                while(j<=numHeaderCol && axisLevel[i] === axisLevel[i+j])
+                {
+                    colSpan+=1;
+                    j+=1;
+                }
+
                 var dataNode = document.createElement('div');
                 Object.assign(dataNode.style, {
-                    'width': cellWidth * counts[countsKeys[i]] + cellWidthUnit, 
+                    'width': cellWidth * colSpan + cellWidthUnit, 
                     'height': styleOptions['dataCell_height'],
                     'box-sizing': 'border-box', // makes 100% cover all bounding properties too
                     'margin': styleOptions['dataCell_margin'],
@@ -245,7 +253,7 @@
                          [2,7]]
 
         dummyData = [{
-            start_period:1,
+            start_period:0,
             end_period:3,
         },{
             start_period:2,

@@ -1,9 +1,30 @@
 {% extends "base.html" %}
 {% block body %}
 
-<div width="800" height="500" style="overflow:scroll;">
-<canvas id="canvas" width="7000" height="524" style="overflow:scroll;" class="chartjs-render-monitor" style="display: block; width: 1049px; height: 524px;"></canvas>
+	<div class="row" id="page-header">
+		<div class="ui basic segment" style="background-color:#cce2ff">
+		  <h1 class="ui sub header">
+			Preference Scheduler Application
+		  </h1>
+		
+		  <p>A simple example of creating a blog with Semanti-UI.</p>
+		</div>
+	</div>
+
+		<p>The purpose of this chart is to visualise the needed roles for the cafe over the periods set</p>
+<div class="row">
+	<div class="desktop eight tablet sixteen wide column">
+		<div >
+			<canvas id="canvas" width="800px" height="524px" style="overflow:scroll;" class="chartjs-render-monitor" style="display: block; width: 1049px; height: 524px;"></canvas>	
+		</div>
+	</div>
+	<div class="desktop eight tablet sixteen wide column">
+			<h3 class="ui header">Section Three</h3>
+	</div>
 </div>
+
+
+
 
         <script>
         

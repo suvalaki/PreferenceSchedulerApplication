@@ -1,4 +1,3 @@
-- complete dummy dataset generator
 - define functions for pulling skillsets and preferences according to slices
 - hook up views
     - login views

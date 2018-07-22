@@ -17,6 +17,18 @@ def random_color():
     random.shuffle(rgbl)
     return tuple(rgbl)
 
+
+class LoginView(View):
+
+    
+    def dispatch_request(self):
+        return 1
+
+class PrimaryView(View):
+
+    def dispatch_request(self):
+        return render_template('index.html' )
+
 class PeriodChart(View):
 
     def dispatch_request(self):
@@ -92,5 +104,6 @@ class ShiftGantt(View):
         return render_template('gantt_example.html')
 
 
+app.add_url_rule('/index/', view_func=PrimaryView.as_view('index'))
 app.add_url_rule('/chart/', view_func=PeriodChart.as_view('period_chart'))
 app.add_url_rule('/gantt/', view_func=ShiftGantt.as_view('gantt_chart'))
