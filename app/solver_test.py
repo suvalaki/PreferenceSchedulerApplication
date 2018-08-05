@@ -1,22 +1,45 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Aug  4 18:30:57 2018
+
+@author: david
+"""
+
+import sqlalchemy as sql
+import sqlalchemy.orm as orm
 import numpy as np
-from app.models import *
-from app import db
 import pulp
 
-#http://benalexkeen.com/linear-programming-with-python-and-pulp-part-5/
+class db:
+    pass
 
-# Formulating the nurse problem
-# https://github.com/pglass/sqlitis CONVERT SQL to SQL alchemy
+db_uri = 'sqlite:///C:\\Users\\david\\Documents\\GitHub\\PreferenceSchedulerApplication\\app\\app.db'
+db.engine = sql.create_engine(db_uri)
+db.Session = orm.session.sessionmaker()
+db.Session.configure(bind=db.engine)
+db.session = db.Session()
 
-# For each shift we need
+
+def list_index_mapping(lis):
+    index = 0
+    mapping = dict()
+    for li in lis:
+        mapping[str(li)] = index
+        index += 1
+    return mapping
+
 
 # Get Roles
 roles = np.asarray([ role[0] for role in db.session.execute(
     "SELECT DISTINCT requirement from schedule_requirement ORDER BY id")])
+    
+roles_index = list_index_mapping(roles)
 
 # GET Periods
 periods = np.asarray([ p[0] for p in db.session.execute(
     "SELECT DISTINCT id from period ORDER BY id")])
+    
+periods_index = list_index_mapping(periods)
 
 ##### Get requirement of personel to each period
 role_requirements = np.array([[e_i[0] for e_i in 
@@ -40,6 +63,9 @@ shifts = np.asarray([x[0] for x in db.session.execute(
     ORDER BY id
     """
 )])
+    
+shifts_index = list_index_mapping(shifts)
+
 
 #Get Shifts allocation to periods
 shift_period_identifier = np.asarray( [[y[0] for y in db.session.execute(
@@ -67,6 +93,8 @@ employees = np.array([x[0] for x in
     SELECT id FROM employee
     ORDER BY id
     """)])
+    
+employees_index = list_index_mapping(employees)
 
 # Get capability of employees to each required role
 employee_skill_identifier = np.array([[e_i[0] for e_i in 
@@ -93,6 +121,8 @@ employee_skill_identifier = np.array([[e_i[0] for e_i in
 # Get enterprise agreements
 enterprise_agreements = np.asarray([ ea[0] for ea in db.session.execute(
     "SELECT DISTINCT id from enterpriseagreement ORDER BY id")])
+    
+enterprise_agreements = list_index_mapping(enterprise_agreements)
 
 #get whether an employee has an enterprise agreement
 emplyee_ea_identifier = np.array([[ea_e[0] for ea_e in 
@@ -182,6 +212,8 @@ weeks = np.array([ x[0] for x in
         ORDER BY id
         """
     )])
+    
+weeks_index = list_index_mapping(weeks)
 
 #Get wekk allocations (the period cycle under which max times reset)
 week_identifier = np.array([[week_i[0] for week_i in 
@@ -203,11 +235,20 @@ week_identifier = np.array([[week_i[0] for week_i in
 
 
 
-
 # Optimisation
+
+def admissible_index(e,s,p,a):
+    # used to reduce the number of objects made to only be useful.
+    # dramatically reduces memory usage
+    return employee_skill_identifier[roles_index[str(a)],
+                                    employees_index[str(e)]] and \
+            shift_period_identifier[shifts_index[str(s)],
+                                    periods_index[str(p)]]
+
 
 # Variable. Assign each 
 allocations = pulp.LpVariable.dicts("A",((e,s,p,a) 
+    if admissible_index(e,s,p,a) else None
     for e in employees 
     for s in shifts
     for p in periods
@@ -216,6 +257,7 @@ allocations = pulp.LpVariable.dicts("A",((e,s,p,a)
 
 # Normal work hour assignments
 allocations_normal = pulp.LpVariable.dicts("A_n",((e,s,p,a) 
+    if admissible_index(e,s,p,a) else None
     for e in employees 
     for s in shifts
     for p in periods
@@ -224,6 +266,7 @@ allocations_normal = pulp.LpVariable.dicts("A_n",((e,s,p,a)
 
 # Overtime work hour assignments
 allocations_overtime = pulp.LpVariable.dicts("A_o",((e,s,p,a) 
+    if admissible_index(e,s,p,a) else None
     for e in employees 
     for s in shifts
     for p in periods
@@ -239,41 +282,55 @@ allocations_overtime = pulp.LpVariable.dicts("A_o",((e,s,p,a)
 # http://benalexkeen.com/linear-programming-with-python-and-pulp-part-4/
 # https://medium.freecodecamp.org/python-list-comprehensions-vs-generator-expressions-cef70ccb49db
 
+# MAY BE ABLE TO OPTIMISE MEMORY BY TRUNCATING PERIODS TO THE SPECIFIC SHIFT
+
+
 # Contraint that an employee can only occupy a single point in time. 
-employee_single_period_assignment = (pulp.LpAffineExpression(
-            (allocations[emp, s, p, a],1) 
+employee_single_period_assignment = [pulp.LpAffineExpression(
+            ((allocations[emp, s, p, a],1) 
             for s in shifts
-            for a in roles) <= 1
+            for a in roles
+            if admissible_index(emp,s,p,a))) <= 1
         for p in periods
         for emp in employees
-) 
+]
 
 # Employee can only perform a skill for which they have the capability
-employee_has_capability = (
-    allocations[emp, s, p, a] <= employee_skill_identifier[a , emp] 
+# employee capability is actually implicit when using addmissible_index
+employee_has_capability = [
+    allocations[emp, s, p, a] <= 
+        employee_skill_identifier[roles_index[str(a)], 
+                                employees_index[str(emp)]] 
     for s in shifts
     for a in roles
     for p in periods
     for emp in employees 
-)
+    if admissible_index(emp,s,p,a)
+]
 
 # During each period the role requirements must be met
-period_role_requirement = (pulp.LpAffineExpression(
-    (allocations[emp,s,p,a], shift_period_identifier[s,p] 
+period_role_requirement = [pulp.LpAffineExpression((
+    (allocations[emp,s,p,a], shift_period_identifier[shifts_index[str(s)],
+                                                     periods_index[str(p)]] )
     for emp in employees
-    for s in shifts )) >= role_requirements[p,a] 
+    for s in shifts 
+    if admissible_index(emp,s,p,a)
+    )) >= role_requirements[roles_index[str(a)],
+                                            periods_index[str(p)]] 
     for p in periods
     for a in roles
-)
+]
 
 
 # Contraint that an employee can only be working normal or overtime but not both
 single_normal_overtime = (
-    allocations_normal[emp, s, p, a] + allocations_overtime[emp, s, p, a] <= 1
+    allocations_normal[emp, s, p, a] + allocations_overtime[emp, s, p, a] == 
+    allocations[emp, s, p, a]
     for emp in employees 
     for s in shifts         
     for p in periods
     for a in roles
+    if admissible_index(emp,s,p,a)
 )
 
 
@@ -282,9 +339,12 @@ min_normal_hours = (pulp.LpAffineExpression(
     (allocations_normal[emp, s, p, a],1)
     for s in shifts
     for p in periods 
-    for a in roles ) >= enterprise_agreement_min_periods[
-        emplyee_ea_identifier[:,emp] == 1] 
-    for emp in employees)
+    for a in roles 
+    if admissible_index(emp,s,p,a)
+    ) >= enterprise_agreement_min_periods[
+        emplyee_ea_identifier[:,employees_index[str(emp)]] == 1] 
+    for emp in employees
+)
 
 
 
@@ -293,8 +353,10 @@ max_normal_hours = (pulp.LpAffineExpression(
     (allocations_normal[emp, s, p, a],1) 
     for s in shifts
     for p in periods
-    for a in roles ) <= enterprise_agreement_max_periods[
-        emplyee_ea_identifier[:,emp] == 1] 
+    for a in roles 
+    if admissible_index(emp,s,p,a)
+    ) <= enterprise_agreement_max_periods[
+        emplyee_ea_identifier[:,employees_index[str(emp)]] == 1] 
     for emp in employees
 )
 
@@ -302,31 +364,35 @@ max_normal_hours = (pulp.LpAffineExpression(
 # Employee can only work overtime hours when they have maxed out normal working 
 # hours
 employee_normal_working_hours_before_overtime = (
-    pulp.LpAffineExpression(
-        (allocations_overtime[emp, s, p, a],1)
-        for s in shifts
-        for p in periods
-        for a in roles)
+    allocations_overtime[emp, s, p, a]
     <= pulp.LpAffineExpression(
-        (allocations_normal[emp, s, p, a],1)
-        for s in shifts
-        for p in periods
-        for a in roles
-    ) / enterprise_agreement_max_periods[emplyee_ea_identifier[:,emp] == 1] 
+        (allocations_normal[emp, s1, p1, a1],1)       
+        for s1 in shifts
+        for p1 in periods
+        for a1 in roles
+        if admissible_index(emp,s1,p1,a1)
+    ) / enterprise_agreement_max_periods[
+            emplyee_ea_identifier[:,employees_index[str(emp)]] == 1] 
+    for s in shifts
+    for p in periods
+    for a in roles
     for emp in employees
+    if admissible_index(emp,s,p,a)
 )
 
 
 # Objective function. The sum of costs
 obj = pulp.lpSum(
     allocations_normal[emp, s, p, a] * enterprise_agreement_wage[
-        emplyee_ea_identifier[:,emp] == 1] +\
+        emplyee_ea_identifier[:,employees_index[str(emp)]] == 1] +\
     allocations_overtime[emp, s, p, a] * enterprise_agreement_wage_overtime[
-        emplyee_ea_identifier[:,emp] == 1] 
+        emplyee_ea_identifier[:,employees_index[str(emp)]] == 1] 
     for emp in employees
     for s in shifts
     for p in periods
-    for a in roles)
+    for a in roles
+    if admissible_index(emp,s,p,a)
+)
 
 # Linear Program
 prob =  pulp.LpProblem("My LP Problem", pulp.LpMinimize)
@@ -351,8 +417,8 @@ for constraint in min_normal_hours:
 for constraint in max_normal_hours:
     prob += constraint
 
-for constraint in employee_normal_working_hours_before_overtime:
-    prob += constraint
+#for constraint in employee_normal_working_hours_before_overtime:
+#    prob += constraint
 
 """
 constraint_set = [
@@ -372,9 +438,36 @@ for constraints in constraint_set:
 
 """
 
-
-status = prob.solve()
-
+prob.solve()
 
 
+pulp.LpStatus[prob.status]
+prob.objective.value()
+prob.variables()
 
+varsdict = {}
+
+for v in prob.variables():
+    varsdict[v.name] = v.varValue
+    
+employee_shift_assignmnet = np.zeros((len(employees),len(shifts)))
+
+
+for e in employees:
+    for s in shifts:
+        for p in periods:
+            for a in roles:
+                if admissible_index(e,s,p,a) and allocations[e,s,p,a] == 1:
+                    # Put the allocation into the database
+                    db.session.execute("""
+                       INSERT INTO                 
+                    """)
+
+
+
+
+#_(0,_9,_49,_4)'
+#.variables()
+# .objective.value()
+
+#function to input back into database

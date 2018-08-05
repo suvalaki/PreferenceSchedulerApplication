@@ -21,6 +21,8 @@ def random_color():
 class LoginView(View):
 
     
+
+
     def dispatch_request(self):
         return 1
 

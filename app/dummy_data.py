@@ -4,6 +4,11 @@ from app.models import *
 from app import db
 from random import randint, uniform
 
+
+# RUN ME BY IMPORTING AS A MODULE INTO FLASK SHELL
+# from app import dummy_data
+# dummy_data.__init__()
+
 def dummy_enterprise_agreements():
 
     agreements = []
@@ -150,7 +155,7 @@ def dummy_shifts(start_datetime, end_datetime, periods_per_hour, shift_length):
 
     while curr_datetime < end_datetime:
 
-        if curr_id % shift_length == 0:
+        if curr_id % shift_length == 0 or curr_id == 1:
 
             shift_id = len(shifts)+1
 
@@ -228,12 +233,12 @@ def dummy_schedule_requirement(requirement=4):
 
 def __init__(employee_number=20,
                 start_datetime = datetime(2018,1,1),
-                end_datetime = datetime(2018,1,14),
-                periods_per_hour = 2,
+                end_datetime = datetime(2018,1,7),
+                periods_per_hour = 1,
                 shift_length = 6,
-                ratio = 2,
+                ratio = 1.1,
                 max_preference = 10,
-                requirement=4):
+                requirement=2):
 
     dummy_enterprise_agreements()
     dummy_skill()
