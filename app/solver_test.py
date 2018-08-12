@@ -10,6 +10,8 @@ import sqlalchemy.orm as orm
 import numpy as np
 import pulp
 
+from app.models import ScheduleAllocation
+
 class db:
     pass
 
@@ -295,6 +297,17 @@ employee_single_period_assignment = [pulp.LpAffineExpression(
         for emp in employees
 ]
 
+#Durring each shift the employee must only perofrm one role
+single_role_per_shift = [ 
+        allocations[emp, s, p, a] == allocations[emp, s, p2, a]
+        if admissible_index(emp,s,p,a) and admissible_index(emp,s,p2,a) else None
+        for p in periods
+        for p2 in periods
+        for emp in employees 
+        for s in shifts
+        for a in roles
+ ]
+
 # Employee can only perform a skill for which they have the capability
 # employee capability is actually implicit when using addmissible_index
 employee_has_capability = [
@@ -402,6 +415,9 @@ prob += obj
 for constraint in employee_single_period_assignment:
     prob += constraint
 
+for constraint in single_role_per_shift:
+    prob+= constraint
+
 for constraint in employee_has_capability:
     prob += constraint
 
@@ -450,22 +466,46 @@ varsdict = {}
 for v in prob.variables():
     varsdict[v.name] = v.varValue
     
-employee_shift_assignmnet = np.zeros((len(employees),len(shifts)))
+#employee_shift_assignmnet = np.zeros((len(employees),len(shifts)))
 
 
-for e in employees:
-    for s in shifts:
-        for p in periods:
+# employee shift mapping
+# just take the max over the periods
+
+
+
+def update_shift_allocation(allocations, allocations_nor, allocations_ovr):
+    
+    db.session.execute("DELETE FROM schedule_allocation")
+    db.session.commit()
+    
+    increment = 0
+    
+    for e in employees:
+        for s in shifts:
             for a in roles:
-                if admissible_index(e,s,p,a) and allocations[e,s,p,a] == 1:
-                    # Put the allocation into the database
-                    db.session.execute("""
-                       INSERT INTO                 
-                    """)
+                
+                assigned = sum( (pulp.value(allocations[e,s,p,a]) \
+                                 if admissible_index(e,s,p,a) else 0\
+                                 for p in periods) )
+                
+                if pulp.value(assigned) > 0:
+ 
+                    db.session.add(ScheduleAllocation(
+                        id = increment,
+                        employee = int(e),
+                        shift = int(s),
+                        skills = int(a),
+                        is_overtime = False
+                    ))
+                    increment += 1
+    
+    db.session.commit()
+    
 
-
-
-
+update_shift_allocation(allocations,allocations_normal,allocations_overtime)
+    
+    
 #_(0,_9,_49,_4)'
 #.variables()
 # .objective.value()

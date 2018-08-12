@@ -31,7 +31,7 @@ class Skill(db.Model):
     name = db.Column(db.String(8), unique=True)
     skill_assignment = db.relationship("SkillAssignment", backref="skills", lazy='dynamic')
     shedule_requirements = db.relationship("ScheduleRequirement", backref="skills", lazy='dynamic')
-    #shedule_allocation = db.relationship('ScheduleAllocation', backref='skill', lazy='dynamic')
+    #shedule_allocation = db.relationship('ScheduleAllocation', backref='skills', lazy='dynamic')
 
 class Period(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,4 +86,5 @@ class ScheduleAllocation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     shift = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
-    skill = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
+    skills = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
+    is_overtime = db.Column(db.Boolean)
