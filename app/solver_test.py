@@ -247,6 +247,10 @@ def admissible_index(e,s,p,a):
             shift_period_identifier[shifts_index[str(s)],
                                     periods_index[str(p)]]
 
+def admissible_role(e,a):
+    return employee_skill_identifier[roles_index[str(a)],
+                                    employees_index[str(e)]]
+
 
 # Variable. Assign each 
 allocations = pulp.LpVariable.dicts("A",((e,s,p,a) 
@@ -255,7 +259,7 @@ allocations = pulp.LpVariable.dicts("A",((e,s,p,a)
     for s in shifts
     for p in periods
     for a in roles),
-    0,1,cat='Binary')
+    0,1,cat='Integer')
 
 # Normal work hour assignments
 allocations_normal = pulp.LpVariable.dicts("A_n",((e,s,p,a) 
@@ -264,7 +268,7 @@ allocations_normal = pulp.LpVariable.dicts("A_n",((e,s,p,a)
     for s in shifts
     for p in periods
     for a in roles),
-    0,1,cat='Binary')
+    0,1,pulp.LpBinary)
 
 # Overtime work hour assignments
 allocations_overtime = pulp.LpVariable.dicts("A_o",((e,s,p,a) 
@@ -273,7 +277,14 @@ allocations_overtime = pulp.LpVariable.dicts("A_o",((e,s,p,a)
     for s in shifts
     for p in periods
     for a in roles),
-    0,1,cat='Binary')
+    0,1,pulp.LpBinary)
+
+shift_allocations = pulp.LpVariable.dicts("S",((e,s,a) 
+    if admissible_role(e,a) else None
+    for e in employees 
+    for s in shifts
+    for a in roles),
+    0,1,pulp.LpBinary)
 
 
 # Contraints
@@ -297,16 +308,38 @@ employee_single_period_assignment = [pulp.LpAffineExpression(
         for emp in employees
 ]
 
-#Durring each shift the employee must only perofrm one role
-single_role_per_shift = [ 
-        allocations[emp, s, p, a] == allocations[emp, s, p2, a]
-        if admissible_index(emp,s,p,a) and admissible_index(emp,s,p2,a) else None
-        for p in periods
-        for p2 in periods
-        for emp in employees 
+
+# shifts enforced by periods
+shift_assignemnt_constraint = [ shift_allocations[emp,s,a] ==\
+        allocations[emp,s,p,a]
+        for emp in  employees
         for s in shifts
+        for p in periods
         for a in roles
- ]
+        if admissible_index(emp,s,p,a) ]
+
+"""
+# shifts enforced by periods2
+shift_assignemnt_constraint2 = [allocations[emp,s,p1,a] == \
+        allocations[emp,s,p2,a] 
+        for emp in  employees
+        for s in shifts
+        for p1 in periods
+        for p2 in periods
+        for a in roles
+        if admissible_index(emp,s,p1,a) and admissible_index(emp,s,p2,a) ]
+"""
+
+#E Employee single skkill per shift assignment
+single_role_per_shift_constraint = [pulp.LpAffineExpression(
+    ((shift_allocations[emp,s,a] ,1)
+    for a in roles
+    if admissible_role(emp,a)))<=1
+    for emp in employees
+    for s in shifts
+]
+
+
 
 # Employee can only perform a skill for which they have the capability
 # employee capability is actually implicit when using addmissible_index
@@ -407,72 +440,48 @@ obj = pulp.lpSum(
     if admissible_index(emp,s,p,a)
 )
 
+
 # Linear Program
 prob =  pulp.LpProblem("My LP Problem", pulp.LpMinimize)
 prob += obj
 
-
-for constraint in employee_single_period_assignment:
-    prob += constraint
-
-for constraint in single_role_per_shift:
-    prob+= constraint
-
-for constraint in employee_has_capability:
-    prob += constraint
-
-for constraint in period_role_requirement:
-    prob += constraint
-
-for constraint in single_normal_overtime:
-    prob += constraint
-
-for constraint in min_normal_hours:
-    prob += constraint
-
-for constraint in max_normal_hours:
-    prob += constraint
-
-#for constraint in employee_normal_working_hours_before_overtime:
-#    prob += constraint
-
-"""
 constraint_set = [
     employee_single_period_assignment,
+    shift_assignemnt_constraint,
+    single_role_per_shift_constraint,
     employee_has_capability,
     period_role_requirement,
     single_normal_overtime,
     min_normal_hours,
     max_normal_hours,
-    employee_normal_working_hours_before_overtime
+    #employee_normal_working_hours_before_overtime
 ]
 
 for constraints in constraint_set:
     for constraint in constraints:
         prob += constraint
-        #print(constraint)
 
-"""
 
-prob.solve()
+# CHANGING THE SOLVER PARAMTERS IS AMAZING!!!
+# https://www.coin-or.org/Doxygen/Cbc/classCbcModel.html#a244a08213674ce52ddcf33ab4ff53380a9b07dae493294592dc35021bd8ec1e9a
+prob.solve(pulp.PULP_CBC_CMD(fracGap = 0.035))
 
 
 pulp.LpStatus[prob.status]
-prob.objective.value()
-prob.variables()
+#prob.objective.value()
+#prob.variables()
 
 varsdict = {}
 
 for v in prob.variables():
     varsdict[v.name] = v.varValue
     
+
+#for x in prob.variables():
+#    print("Name: ", x.name, " Cat: ", x.cat, " Val: ", x.value())
+
+    
 #employee_shift_assignmnet = np.zeros((len(employees),len(shifts)))
-
-
-# employee shift mapping
-# just take the max over the periods
-
-
 
 def update_shift_allocation(allocations, allocations_nor, allocations_ovr):
     
@@ -483,31 +492,23 @@ def update_shift_allocation(allocations, allocations_nor, allocations_ovr):
     
     for e in employees:
         for s in shifts:
-            for a in roles:
-                
-                assigned = sum( (pulp.value(allocations[e,s,p,a]) \
-                                 if admissible_index(e,s,p,a) else 0\
-                                 for p in periods) )
-                
-                if pulp.value(assigned) > 0:
- 
-                    db.session.add(ScheduleAllocation(
-                        id = increment,
-                        employee = int(e),
-                        shift = int(s),
-                        skills = int(a),
-                        is_overtime = False
-                    ))
-                    increment += 1
+            for p in periods:
+                for a in roles:
+                    if admissible_index(e,s,p,a) and allocations[e,s,p,a].value() == 1:
+                        
+                        db.session.add(ScheduleAllocation(
+                            id = increment,
+                            employee = int(e),
+                            shift = int(s),
+                            skills = int(a),
+                            period = int(p),
+                            is_overtime = allocations_ovr[e,s,p,a].value() == 1
+                        ))
+                        increment += 1
     
     db.session.commit()
     
 
 update_shift_allocation(allocations,allocations_normal,allocations_overtime)
-    
-    
-#_(0,_9,_49,_4)'
-#.variables()
-# .objective.value()
 
-#function to input back into database
+print(pulp.LpStatus[prob.status])

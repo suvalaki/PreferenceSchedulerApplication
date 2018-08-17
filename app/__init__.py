@@ -11,6 +11,7 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG=True
+    SECRET_KEY='123124'
 
 
 #app.create_app()
@@ -19,8 +20,8 @@ class Config(object):
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
+#login_manager = LoginManager()
+#login_manager.init_app(app)
 
 from app import models
 

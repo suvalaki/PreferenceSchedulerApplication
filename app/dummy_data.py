@@ -236,9 +236,9 @@ def __init__(employee_number=20,
                 end_datetime = datetime(2018,1,7),
                 periods_per_hour = 1,
                 shift_length = 6,
-                ratio = 1.1,
+                ratio = 1.05,
                 max_preference = 10,
-                requirement=2):
+                requirement=1):
 
     dummy_enterprise_agreements()
     dummy_skill()

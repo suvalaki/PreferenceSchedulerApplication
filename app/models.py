@@ -87,4 +87,5 @@ class ScheduleAllocation(db.Model):
     employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     shift = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
     skills = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
+    period = db.Column(db.Integer, db.ForeignKey('period.id'), nullable=False)
     is_overtime = db.Column(db.Boolean)
