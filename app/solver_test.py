@@ -464,7 +464,10 @@ for constraints in constraint_set:
 
 # CHANGING THE SOLVER PARAMTERS IS AMAZING!!!
 # https://www.coin-or.org/Doxygen/Cbc/classCbcModel.html#a244a08213674ce52ddcf33ab4ff53380a9b07dae493294592dc35021bd8ec1e9a
-prob.solve(pulp.PULP_CBC_CMD(fracGap = 0.035))
+#https://stackoverflow.com/questions/39943236/how-to-set-optimality-gap-in-pulp-or-with-cbc-solver
+prob.solve(pulp.COIN_CMD(
+        path = r'C:\Users\david\Downloads\Cbc-2.9.9\Cbc\src\CbcFollowOn.hpp',
+        fracGap = 0.035))
 
 
 pulp.LpStatus[prob.status]

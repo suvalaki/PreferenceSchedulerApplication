@@ -3,20 +3,30 @@ import sqlalchemy.orm as orm
 import numpy as np
 import pulp
 
-from app import db
-from app.models import ScheduleAllocation
+try:
+    # if flask is running pull the databaser from the flask app itself
+    from app import db
+    from app.models import ScheduleAllocation
 
-"""
-class db:
-    pass
+except:
+    # if flask is not running setup the database instance manually
 
-db_uri = 'sqlite:///C:\\Users\\david\\Documents\\GitHub\\PreferenceSchedulerApplication\\app\\app.db'
-db.engine = sql.create_engine(db_uri)
-db.Session = orm.session.sessionmaker()
-db.Session.configure(bind=db.engine)
-db.session = db.Session()
+    from os import getcwd
+    from models import ScheduleAllocation
 
-"""
+    curdir = getcwd()
+
+    class db:
+        pass
+
+    db_uri = f'sqlite:///{curdir}\\app.db'
+    db.engine = sql.create_engine(db_uri)
+    db.Session = orm.session.sessionmaker()
+    db.Session.configure(bind=db.engine)
+    db.session = db.Session()
+
+
+
 
 def list_index_mapping(lis):
     index = 0
@@ -213,7 +223,7 @@ weeks = np.array([ x[0] for x in
     
 weeks_index = list_index_mapping(weeks)
 
-#Get wekk allocations (the period cycle under which max times reset)
+#Get week allocations (the period cycle under which max times reset)
 week_identifier = np.array([[week_i[0] for week_i in 
     db.session.execute(
         """
@@ -247,6 +257,9 @@ def admissible_role(e,a):
     return employee_skill_identifier[roles_index[str(a)],
                                     employees_index[str(e)]]
 
+def period_in_week(w,p):
+    return periods_index[str(p)]
+
 
 # Variable. Assign each 
 allocations = pulp.LpVariable.dicts("A",((e,s,p,a) 
@@ -275,6 +288,7 @@ allocations_overtime = pulp.LpVariable.dicts("A_o",((e,s,p,a)
     for a in roles),
     0,1,pulp.LpBinary)
 
+# Shifts for each employee and role
 shift_allocations = pulp.LpVariable.dicts("S",((e,s,a) 
     if admissible_role(e,a) else None
     for e in employees 
@@ -282,6 +296,11 @@ shift_allocations = pulp.LpVariable.dicts("S",((e,s,a)
     for a in roles),
     0,1,pulp.LpBinary)
 
+# weekly overtime identifier
+employee_weekly_overtime = pulp.LpVariable.dicts('E_o',((e,w)
+    for e in employees
+    for w in weeks 
+))
 
 # Contraints
 #https://www.programcreek.com/python/example/96869/cvxpy.sum_entries
@@ -405,6 +424,8 @@ max_normal_hours = (pulp.LpAffineExpression(
 
 # Employee can only work overtime hours when they have maxed out normal working 
 # hours
+""" USE A BINARY IDENTIFIER HERE BECAUSE IT USES LESS MEMORY
+
 employee_normal_working_hours_before_overtime = (
     allocations_overtime[emp, s, p, a]
     <= pulp.LpAffineExpression(
@@ -422,6 +443,31 @@ employee_normal_working_hours_before_overtime = (
     if admissible_index(emp,s,p,a)
 )
 
+""""
+
+employee_is_overtime = [
+    employee_weekly_overtime[emp, w] * enterprise_agreement_max_periods[
+            emplyee_ea_identifier[:,employees_index[str(emp)]] == 1]  <= \
+    pulp.LpAffineExpression(
+        (allocations_normal[emp, s1, p1, a1],1.0)       
+        for s1 in shifts
+        for p1 in periods[week_identifier[weeks_index[str(w)]] == 1]
+        for a1 in roles
+        if admissible_index(emp,s1,p1,a1)
+    ) 
+    for emp in employees
+    for w in weeks
+]
+
+overtime_allocations_only_when_employee_is_overtime = [
+    allocations_overtime[emp, s, p, a] <= employee_weekly_overtime[emp, w] \
+    for w in weeks
+    for s in shifts
+    for p in periods[week_identifier[weeks_index[str(w)]] == 1]
+    for a in roles
+    for emp in employees
+    if admissible_index(emp,s,p,a)
+]
 
 # Objective function. The sum of costs
 obj = pulp.lpSum(
@@ -451,6 +497,8 @@ constraint_set = [
     min_normal_hours,
     max_normal_hours,
     #employee_normal_working_hours_before_overtime
+    employee_is_overtime,
+    overtime_allocations_only_when_employee_is_overtime
 ]
 
 for constraints in constraint_set:
@@ -460,8 +508,9 @@ for constraints in constraint_set:
 
 # CHANGING THE SOLVER PARAMTERS IS AMAZING!!!
 # https://www.coin-or.org/Doxygen/Cbc/classCbcModel.html#a244a08213674ce52ddcf33ab4ff53380a9b07dae493294592dc35021bd8ec1e9a
-prob.solve(pulp.PULP_CBC_CMD(fracGap = 0.035))
-
+#prob.solve(pulp.PULP_CBC_CMD(fracGap = 0.0005, options = {'CbcFollowOn':1}))
+prob.solve(pulp.PULP_CBC_CMD(options = ['--CbcFollowOn 1']))
+prob.solve(pulp.PULP_CBC_CMD(fracGap = 0.0005))
 
 pulp.LpStatus[prob.status]
 #prob.objective.value()

@@ -55,7 +55,7 @@ def dummy_periods(start_datetime, end_datetime, periods_per_hour):
 
     periods = []
 
-    while curr_datetime <= end_datetime:
+    while curr_datetime < end_datetime:
 
         periods.append(Period(
             id = curr_id,
