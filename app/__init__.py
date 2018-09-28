@@ -20,8 +20,8 @@ class Config(object):
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
-#login_manager = LoginManager()
-#login_manager.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 from app import models
 

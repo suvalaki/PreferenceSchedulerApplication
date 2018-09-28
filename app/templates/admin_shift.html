@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block body %}
+
+
+<!-- edit datatables wthi http://kingkode.com/free-datatables-editor-alternative/ -->
+
+<!-- table of shifts -->
+<!-- Use Data Tables -->
+
+<h3>Table of shift data</h3>
+
+<style>
+
+    tr.Selected {
+        background-color: red;
+    }
+
+</style>
+
+
+<div id="shift_tb_div" >
+<table class="display" id="shift_tb" style="width:100%">
+    <thead>
+        <tr>
+            <th>Shift Id</th>
+            <th>Start Period</th>
+            <th>End Period</th>
+            <th>Shift Length</th>
+        </tr>
+
+</table>
+</div>
+
+<script>
+
+
+    // Get the data using a fetch request
+    fetch('/test_shiftTable/')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(myJson) {
+            //console.log(jsonify(myJson));
+            var table = $('#shift_tb').DataTable( {
+                data: myJson["data"],
+                dom: 'Bfrtip', // enables the custom button
+                buttons: [
+                    {
+                        text: 'Delete Selection',
+                        action: function ( e, dt, node, config ) {
+
+                            // dt holds an api to the table
+                            var rows = dt
+                                .rows( '.selected' )
+
+                            // send request to the server to delete this id
+                            var dat = rows.data().toArray();
+                            var to_delete = [];
+                            // https://datatables.net/reference/api/data()
+                            for (var i = 0; i < dat.length; i++)
+                            {
+                                to_delete.push(dat[i][0]);
+                            }
+
+
+                            //https://codeburst.io/useful-javascript-array-and-object-methods-6c7971d93230
+                            console.log(Object.values(dat));
+                            postData('/test_shift_delete/', to_delete);
+
+                            // if delete was successfull redraw the table
+                            
+                            rows.remove()
+                                .draw();
+
+                            // if delete was not a success warn us
+                            alert( 'The server encountered an error deleting this item' );
+
+                        }
+                    }
+                ],
+            });
+
+            // add delete functionality to the table 
+            // https://stackoverflow.com/questions/31987590/delete-row-using-datatable-plugin-then-delete-it-from-database
+            // add click event on DataTable which injects some class (ex : selected ) on that row
+
+
+            table.on( 'click', 'tr', function () {
+                if ( $(this).hasClass('selected') ) {
+                    $(this).removeClass('selected');
+                }
+                else {
+                    //table.$('tr.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                }
+            } );
+
+        });
+
+
+
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+function postData(url = ``, data = {}) {
+  // Default options are marked with *
+    return fetch(url, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: data, // body data type must match "Content-Type" header
+    });
+}
+
+
+
+
+
+
+</script>
+
+
+<!-- calendar of shifts -->
+
+
+
+<!-- create Shift function -->
+
+
+
+<!-- delete shift function -->
+
+<h3>Delete Shift function</h3>
+
+<form action="POST">
+    ID 
+    <input type="text" name="id">
+    <input type="submit" value="Submit">
+</form>
+
+<script>
+//https://scotch.io/tutorials/how-to-use-the-javascript-fetch-api-to-get-data
+
+</script>
+
+
+
+{% endblock %}

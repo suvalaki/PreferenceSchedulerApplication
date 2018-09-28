@@ -231,11 +231,11 @@ def dummy_schedule_requirement(requirement=4):
         db.session.add(r)
     db.session.commit()
 
-def __init__(employee_number=20,
+def __init__(employee_number=10,
                 start_datetime = datetime(2018,1,1),
                 end_datetime = datetime(2018,1,7),
                 periods_per_hour = 1,
-                shift_length = 6,
+                shift_length = 1,
                 ratio = 1.05,
                 max_preference = 10,
                 requirement=1):

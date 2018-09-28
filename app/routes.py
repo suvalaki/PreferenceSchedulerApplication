@@ -3,14 +3,16 @@
 
 #https://github.com/wbkd/awesome-d3
 
-from flask import render_template, json
+from flask import render_template, request, json
 from flask.views import View, MethodView
 from app import app
 from app import db, models
 import random
-import json
 import matplotlib
 import matplotlib.cm as cm
+
+
+# REQUESTS https://stackoverflow.com/questions/10434599/how-to-get-data-received-in-flask-request
 
 def random_color():
     rgbl=[255,0,0]
@@ -20,18 +22,24 @@ def random_color():
 
 class LoginView(View):
 
-    
-
+    methods = ['GET']
+    #decorators = [superuser_required]
 
     def dispatch_request(self):
-        return 1
+        return render_template('login.html')
 
 class PrimaryView(View):
+
+    methods = ['GET']
+    #decorators = [superuser_required]
 
     def dispatch_request(self):
         return render_template('index.html' )
 
 class PeriodChart(View):
+
+    methods = ['GET']
+    #decorators = [superuser_required]
 
     def dispatch_request(self):
 
@@ -94,12 +102,83 @@ class PeriodChart(View):
         return render_template('period_chart.html', dataset = data  )
 
 
+class AJAX_ShiftTable(View):
+
+    methods = ['GET']
+    #decorators = [superuser_required]
+
+    @staticmethod
+    def load_shifts_to_json():
+
+        #Get Shifts
+        shifts = [list(x) for x in db.session.execute(
+            """
+            SELECT  id, 
+                    start_period, 
+                    start_period + shift_length as end_period,
+                    shift_length
+            FROM shift
+            ORDER BY id
+            """
+        )]
+
+        return json.jsonify(data = shifts)
+        
+
+    def dispatch_request(self):
+        return self.load_shifts_to_json()
+
+
+# https://scotch.io/tutorials/how-to-use-the-javascript-fetch-api-to-get-data
+
+class AJAX_ShiftEdit(View):
+
+    methods = ['POST']
+    #decorators = [superuser_required]
+
+    # https://stackoverflow.com/questions/31987590/delete-row-using-datatable-plugin-then-delete-it-from-database 
+
+    @staticmethod
+    def delete_shift(id):
+
+        
+        #Get Shifts
+        try:
+            db.Shfit.delete().where(
+                db.Shfit.c.id == id
+                )
+            return True
+
+        except:
+            return False
+        
+
+    def dispatch_request(self):
+
+        print(request.data)
+        id = request.data
+
+        return self.delete_shift(id)
+
+class ShiftTable(View):
+
+    methods = ['GET']
+
+    def dispatch_request(self):
+        return render_template('admin_shift.html')
+
+
+
 class ShiftGantt(View):
 
     #Gantt Charts
     # https://ourcodeworld.com/articles/read/434/top-5-best-free-jquery-and-javascript-dynamic-gantt-charts-for-web-applications
     # https://frappe.io/gantt
     # https://dhtmlx.com/blog/d3-gantt-charts-vs-dhtmlx-gantt/
+
+    @staticmethod
+    def funcname(parameter_list):
+        pass
 
 
     def dispatch_request(self):
@@ -109,3 +188,9 @@ class ShiftGantt(View):
 app.add_url_rule('/index/', view_func=PrimaryView.as_view('index'))
 app.add_url_rule('/chart/', view_func=PeriodChart.as_view('period_chart'))
 app.add_url_rule('/gantt/', view_func=ShiftGantt.as_view('gantt_chart'))
+app.add_url_rule('/login/', view_func=LoginView.as_view('login'))
+
+# Tesst Views
+app.add_url_rule('/test_shiftTable/', view_func=AJAX_ShiftTable.as_view('shiftTable'))
+app.add_url_rule('/test_shift/', view_func=ShiftTable.as_view('shift'))
+app.add_url_rule('/test_shift_delete/', view_func=AJAX_ShiftEdit.as_view('shift_delete'))
