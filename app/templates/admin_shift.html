@@ -19,6 +19,40 @@
 
 
 <div id="shift_tb_div" >
+
+        <button id="myBtn">Open Modal</button>
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+        
+          <!-- Modal content -->
+          <div id="myModalContent" class="modal-content">
+            <span class="close">&times;</span>
+            <p>Edit Shift</p>
+            <p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Shift Id</td><td><input type="text"></td></tr>
+                    <tr><td>Start Period</td><td><input type="text"></td></tr>
+                    <tr><td>End Period</td><td><input type="text"></td></tr>
+                    <tr><td>Shift Lenfth</td><td><input type="text"></td></tr>  
+                </tbody>
+            </table>
+            </p>
+            <p>
+            <button>Submit Changes</button>
+            <button>Revert Changes</button>
+            </p>
+          </div>
+        
+        </div>
+
 <table class="display" id="shift_tb" style="width:100%">
     <thead>
         <tr>
@@ -27,10 +61,54 @@
             <th>End Period</th>
             <th>Shift Length</th>
             <th>Button</th>
+            <th>button2</th>
         </tr>
 
 </table>
 </div>
+
+
+<style>
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 500px; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+</style>
+
 
 <script>
 
@@ -86,10 +164,20 @@
                     { "data": [1] },
                     { "data": [2] },
                     { "data": [3] },
-                    { "data": null ,
-                        render: function ( data, type, row ) {
-                        return '<!-- Button trigger modal --><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button><!-- Modal --><div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="test2">' + data.proj_name + '</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body">...</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button><button type="button" class="btn btn-primary">Save changes</button></div></div></div></div>';
-                        },
+                    // https://stackoverflow.com/questions/30627026/jquery-datatables-how-to-add-an-edit-and-delete-option
+                    /* EDIT */ {
+                        data : [0],
+                        render: function (data, type, row) {
+                            /* edit should be accomplished using a modal 
+                            https://www.w3schools.com/howto/howto_css_modals.asp */
+                            return '<a class="table-edit" data-id="' + data + '">EDIT</a>'
+                        }
+                    },
+                    /* DELETE */ {
+                        data : null,
+                        render: function (data, type, row) {
+                            return '<a class="table-delete" data-id="' + row[0] + '">DELETE</a>'
+                        }
                     },
                 ]
             });
@@ -109,8 +197,51 @@
                 }
             } );
 
+        })
+    .then(function(){
+
+        // add post table load events
+
+        // modal ON THE TABLE
+        $('.table-edit').on('click',null, function(e){
+            console.log(e);
+            var modal = document.getElementById('myModal');
+            modal.style.display = "block";
+
+            var modalContent = document.getElementById('myModalContent');
+            //modalContent.innerHTML = "NEW" + e.currentTarget.dataset.id;
         });
 
+    });
+
+
+
+/* create the modal which allows for table editing */
+// Get the modal
+var modal = document.getElementById('myModal');
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks on the button, open the modal 
+btn.onclick = function() {
+    modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+    modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
 
 
 
