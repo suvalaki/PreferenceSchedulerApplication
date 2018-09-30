@@ -184,35 +184,43 @@ class AJAX_ShiftEdit(MethodView):
 
 
 
-        if data['method'] == 'modify':
+        if data['method'] == 'edit':
             # Modify a single database entry
 
             #update the shift table element
             shift_update_candidate = db.session.query(models.Shift)\
             .filter(models.Shift.id == data['id']).first()
 
-            shift_update_candidate.start_period = data['start_period']
-            shift_update_candidate.shift_length = data['shift_length']
+            print("checkpoint1")
+            print(shift_update_candidate)
+            print("checkpoint2")
+
+            shift_update_candidate.start_period = int(data['start_period'])
+            shift_update_candidate.shift_length = int(data['shift_length'])
+
+            print("Checkpoint3")
 
             #update the shift periods within the shift period table
             db.session.query(models.ShiftPeriods)\
-                .filter(models.ShiftPeriods.shift == data['ids'])\
+                .filter(models.ShiftPeriods.shift == data['id'])\
                 .delete(synchronize_session=False)
 
             max_id = db.session.query(
                 db.func.max(models.ShiftPeriods.id)
             ).first()[0]
 
-            for period in range(data['shift_length']):
+            print("checkpoint4")
+
+            for period in range(int(data['shift_length'])):
                 db.session.add(models.ShiftPeriods(
-                    id = max_id + period + 1,
-                    period = data['start_period'] + period,
-                    shift = data['id']
+                    id = int(max_id) + int(period) + 1,
+                    period = int(data['start_period']) + period,
+                    shift = int(data['id'])
                 ))
 
             db.session.commit()
-
-
+        
+            return jsonify({'edit_status':True}) 
             #update the 
 
 

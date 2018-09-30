@@ -38,16 +38,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>Shift Id</td><td><input type="text"></td></tr>
-                    <tr><td>Start Period</td><td><input type="text"></td></tr>
-                    <tr><td>End Period</td><td><input type="text"></td></tr>
-                    <tr><td>Shift Lenfth</td><td><input type="text"></td></tr>  
+                    <tr id="schema_c1"><td class="col">Shift Id</td><td><input id="schema_c1_input" type="text"></td></tr>
+                    <tr id="schema_c2"><td class="col">Start Period</td><td><input id="schema_c2_input" type="text"></td></tr>
+                    <tr id="schema_c3"><td class="col">End Period</td><td><input id="schema_c3_input" type="text"></td></tr>
+                    <tr id="schema_c4"><td class="col">Shift Lenfth</td><td><input id="schema_c4_input" type="text"></td></tr>  
                 </tbody>
             </table>
             </p>
             <p>
-            <button>Submit Changes</button>
-            <button>Revert Changes</button>
+            <button id="submit_edit">Submit Changes</button>
+            <button id="revert_edit">Revert Changes</button>
             </p>
           </div>
         
@@ -122,6 +122,9 @@
             //console.log(jsonify(myJson));
             var table = $('#shift_tb').DataTable( {
                 data: myJson["data"],
+                rowId: function(a) { // needs to be function to append correct id
+                    return 'tab_id_' + a[0];
+                }, // set the row id to the first of the data columns
                 dom: 'Bfrtip', // enables the custom button
                 buttons: [
                     {
@@ -182,6 +185,9 @@
                 ]
             });
 
+
+            // add post table load events
+
             // add delete functionality to the table 
             // https://stackoverflow.com/questions/31987590/delete-row-using-datatable-plugin-then-delete-it-from-database
             // add click event on DataTable which injects some class (ex : selected ) on that row
@@ -197,20 +203,69 @@
                 }
             } );
 
+
+            // modal ON THE TABLE
+            $('tr').on('click', '.table-edit', function(e){
+                console.log(e);
+
+                
+                var table_row = table.row( "#tab_id_" + e.currentTarget.dataset.id ).data();
+                console.log(table_row);
+
+                var modalContent = document.getElementById('myModalContent');
+                var modalContentInput_1 = document.getElementById('schema_c1_input');
+                var modalContentInput_2 = document.getElementById('schema_c2_input');
+                var modalContentInput_3 = document.getElementById('schema_c3_input');
+                var modalContentInput_4 = document.getElementById('schema_c4_input');
+
+                modalContentInput_1.value = table_row[0];
+                modalContentInput_2.value = table_row[1];
+                modalContentInput_3.value = table_row[2];
+                modalContentInput_4.value = table_row[3];
+
+                var modal = document.getElementById('myModal');
+                modal.style.display = "block";
+                
+                // setup handlers to alter the end time or shift legth depending on the other
+                $('#schema_c3_input').on('change',null, function(){
+                    modalContentInput_4.value = parseInt(modalContentInput_3.value) - parseInt(modalContentInput_2.value);
+                });
+
+                $('#schema_c4_input').on('change',null, function(){
+                    modalContentInput_3.value = parseInt(modalContentInput_4.value) + parseInt(modalContentInput_2.value);
+                });
+
+                // add post request for submitting changes to server
+                
+                $("#submit_edit").on('click', null, function(){
+                    postData('/test_shift_delete/', {
+                        method: 'edit', 
+                        id: modalContentInput_1.value, 
+                        start_period: modalContentInput_2.value, 
+                        shift_length: modalContentInput_4.value})
+                    .then(function(response_json){
+
+                    });
+                });
+
+
+                // add event listener for reverting changes
+                $("#revert_edit").on('click', null, function(){
+                    modalContentInput_1.value = table_row[0];
+                    modalContentInput_2.value = table_row[1];
+                    modalContentInput_3.value = table_row[2];
+                    modalContentInput_4.value = table_row[3];
+                });
+
+
+            });
+
         })
     .then(function(){
 
         // add post table load events
 
-        // modal ON THE TABLE
-        $('.table-edit').on('click',null, function(e){
-            console.log(e);
-            var modal = document.getElementById('myModal');
-            modal.style.display = "block";
 
-            var modalContent = document.getElementById('myModalContent');
-            //modalContent.innerHTML = "NEW" + e.currentTarget.dataset.id;
-        });
 
     });
 
