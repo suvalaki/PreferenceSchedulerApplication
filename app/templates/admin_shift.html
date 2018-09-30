@@ -26,6 +26,7 @@
             <th>Start Period</th>
             <th>End Period</th>
             <th>Shift Length</th>
+            <th>Button</th>
         </tr>
 
 </table>
@@ -62,22 +63,35 @@
                                 to_delete.push(dat[i][0]);
                             }
 
-
-                            //https://codeburst.io/useful-javascript-array-and-object-methods-6c7971d93230
-                            console.log(Object.values(dat));
-                            postData('/test_shift_delete/', to_delete);
-
-                            // if delete was successfull redraw the table
                             
-                            rows.remove()
-                                .draw();
+                            //https://codeburst.io/useful-javascript-array-and-object-methods-6c7971d93230
 
-                            // if delete was not a success warn us
-                            alert( 'The server encountered an error deleting this item' );
-
+                            postData('/test_shift_delete/', {method: 'delete', ids: to_delete})
+                            .then(function(value){
+                                console.log(value);
+                                if(value.delete_status === true)
+                                {
+                                    // if delete was successfull redraw the table
+                                    rows.remove().draw();
+                                }else{
+                                    // if delete was not a success warn us
+                                    alert('The server encountered an error deleting this item');
+                                }
+                            });
                         }
                     }
                 ],
+                columns : [
+                    { "data": [0] },
+                    { "data": [1] },
+                    { "data": [2] },
+                    { "data": [3] },
+                    { "data": null ,
+                        render: function ( data, type, row ) {
+                        return '<!-- Button trigger modal --><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button><!-- Modal --><div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="test2">' + data.proj_name + '</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body">...</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button><button type="button" class="btn btn-primary">Save changes</button></div></div></div></div>';
+                        },
+                    },
+                ]
             });
 
             // add delete functionality to the table 
@@ -114,8 +128,9 @@ function postData(url = ``, data = {}) {
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
-        body: data, // body data type must match "Content-Type" header
-    });
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(response => response.json()); // parses response to JSON
 }
 
 

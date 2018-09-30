@@ -20,6 +20,9 @@ class Config(object):
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
+meta = db.metadata
+engine = db.engine
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -28,6 +31,8 @@ from app import models
 migrate = Migrate(app, db)
 
 from app import routes
-#@app.shell_context_processor
-#def make_shell_context():
-#    return {}asdas
+@app.shell_context_processor
+def make_shell_context():
+    return {'db': db, 'meta':meta, 'models': models}
+
+#metadata is in db.Model

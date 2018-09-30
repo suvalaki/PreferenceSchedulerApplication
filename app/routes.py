@@ -10,6 +10,7 @@ from app import db, models
 import random
 import matplotlib
 import matplotlib.cm as cm
+from flask.json import jsonify
 
 
 # REQUESTS https://stackoverflow.com/questions/10434599/how-to-get-data-received-in-flask-request
@@ -122,18 +123,19 @@ class AJAX_ShiftTable(View):
             """
         )]
 
+
         return json.jsonify(data = shifts)
         
 
     def dispatch_request(self):
+
         return self.load_shifts_to_json()
 
 
 # https://scotch.io/tutorials/how-to-use-the-javascript-fetch-api-to-get-data
 
-class AJAX_ShiftEdit(View):
+class AJAX_ShiftEdit(MethodView):
 
-    methods = ['POST']
     #decorators = [superuser_required]
 
     # https://stackoverflow.com/questions/31987590/delete-row-using-datatable-plugin-then-delete-it-from-database 
@@ -144,21 +146,87 @@ class AJAX_ShiftEdit(View):
         
         #Get Shifts
         try:
-            db.Shfit.delete().where(
-                db.Shfit.c.id == id
-                )
+            db.Shfit.delete().where(db.Shfit.c.id == id)
             return True
 
         except:
             return False
         
 
-    def dispatch_request(self):
+    def post(self):
+        
+        data = request.get_json()
+        print(data)
 
-        print(request.data)
-        id = request.data
+        if data['method'] == 'delete':
+            #https://kite.com/python/docs/sqlalchemy.orm.query.Query.delete
+            # https://stackoverflow.com/questions/39773560/sqlalchemy-how-do-you-delete-multiple-rows-without-querying
+            #sql alchemy bulk deletion
+            # https://docs.sqlalchemy.org/en/latest/orm/query.html
 
-        return self.delete_shift(id)
+            try:
+                db.session.query(models.Shift)\
+                .filter(models.Shift.id.in_(data['ids']))\
+                .delete(synchronize_session=False)
+
+                db.session.query(models.ShiftPeriods)\
+                .filter(models.ShiftPeriods.shift.in_(data['ids']))\
+                .delete(synchronize_session=False)
+
+                #when syncronise session=False requires session commit
+                db.session.commit()
+
+                return jsonify({'delete_status':True}) 
+
+            except:
+                db.session.rollback()
+                return jsonify({'delete_status':False})
+
+
+
+        if data['method'] == 'modify':
+            # Modify a single database entry
+
+            #update the shift table element
+            shift_update_candidate = db.session.query(models.Shift)\
+            .filter(models.Shift.id == data['id']).first()
+
+            shift_update_candidate.start_period = data['start_period']
+            shift_update_candidate.shift_length = data['shift_length']
+
+            #update the shift periods within the shift period table
+            db.session.query(models.ShiftPeriods)\
+                .filter(models.ShiftPeriods.shift == data['ids'])\
+                .delete(synchronize_session=False)
+
+            max_id = db.session.query(
+                db.func.max(models.ShiftPeriods.id)
+            ).first()[0]
+
+            for period in range(data['shift_length']):
+                db.session.add(models.ShiftPeriods(
+                    id = max_id + period + 1,
+                    period = data['start_period'] + period,
+                    shift = data['id']
+                ))
+
+            db.session.commit()
+
+
+            #update the 
+
+
+
+        #data = request.data
+        #dataDict = json.loads(data)
+
+        #print(dataDict)
+        #print(request.values)
+
+
+        return jsonify({'test' : 1, 'data' : 'dataset'})
+
+
 
 class ShiftTable(View):
 
