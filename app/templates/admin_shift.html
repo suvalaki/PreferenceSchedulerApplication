@@ -20,7 +20,7 @@
 
 <div id="shift_tb_div" >
 
-        <button id="myBtn">Open Modal</button>
+        <button id="myBtn" hidden>Open Modal</button>
 
         <!-- The Modal -->
         <div id="myModal" class="modal">
@@ -28,7 +28,7 @@
           <!-- Modal content -->
           <div id="myModalContent" class="modal-content">
             <span class="close">&times;</span>
-            <p>Edit Shift</p>
+            <p id="modal-heading">Edit Shift</p>
             <p>
             <table>
                 <thead>
@@ -38,7 +38,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr id="schema_c1"><td class="col">Shift Id</td><td><input id="schema_c1_input" type="text"></td></tr>
+                    <tr id="schema_c1"><td class="col">Shift Id</td><td><input id="schema_c1_input" type="text" readonly></td></tr>
                     <tr id="schema_c2"><td class="col">Start Period</td><td><input id="schema_c2_input" type="text"></td></tr>
                     <tr id="schema_c3"><td class="col">End Period</td><td><input id="schema_c3_input" type="text"></td></tr>
                     <tr id="schema_c4"><td class="col">Shift Lenfth</td><td><input id="schema_c4_input" type="text"></td></tr>  
@@ -46,8 +46,10 @@
             </table>
             </p>
             <p>
-            <button id="submit_edit">Submit Changes</button>
-            <button id="revert_edit">Revert Changes</button>
+            <button id="submit_edit" class="inactive">Submit Changes</button>
+            <button id="revert_edit" class="inactive">Revert Changes</button>
+            <button id="submit_new" class="active">Submit New Shift</button>
+            <button id="submit_new_again" class="inactive">Submit Another New Shift</button>
             </p>
           </div>
         
@@ -107,11 +109,25 @@
     cursor: pointer;
 }
 
+.modal-content .active {
+    display: inline;
+}
+
+.modal-content .inactive {
+    display: none;
+}
+
+.modal-content .active-table-row {
+    display: table-row;
+}
 </style>
 
 
 <script>
 
+    /* Some information on jquery table frameworks
+    http://www.jquerybyexample.net/2017/02/7-best-lightweight-jquery-data-table.html
+    */
 
     // Get the data using a fetch request
     fetch('/test_shiftTable/')
@@ -160,7 +176,90 @@
                                 }
                             });
                         }
-                    }
+                    },
+                    {
+                        text: "add Shift",
+                        action: function( e, dt, node, config ){
+
+                            
+                            // make the appropriate edit buttons visible
+                            var modalHeading = document.getElementById('modal-heading');
+                            var shiftIdCol = document.getElementById('schema_c1');
+                            var editButton = document.getElementById('submit_edit');
+                            var revertButton = document.getElementById('revert_edit');
+                            var newButton = document.getElementById('submit_new');
+                            var newButtonAgain = document.getElementById('submit_new_again');
+                            
+                            var modalContentInput_2 = document.getElementById('schema_c2_input');
+                            var modalContentInput_3 = document.getElementById('schema_c3_input');
+                            var modalContentInput_4 = document.getElementById('schema_c4_input');
+
+
+                            modalHeading.innerText = "Add New Shift";
+                            shiftIdCol.classList.remove('active-table-row');
+                            shiftIdCol.classList.add('inactive');
+                            editButton.classList.remove('active');
+                            editButton.classList.add('inactive');
+                            revertButton.classList.remove('active');
+                            revertButton.classList.add('inactive');
+                            newButton.classList.remove('inactive');
+                            newButton.classList.add('active');
+
+                            // open the modal 
+                            var modal = document.getElementById('myModal');
+                            modal.style.display = "block";
+
+                            // setup handlers to alter the end time or shift legth depending on the other
+                            $('#schema_c3_input').on('change',null, function(){
+                                modalContentInput_4.value = parseInt(modalContentInput_3.value) - parseInt(modalContentInput_2.value);
+                            });
+
+                            $('#schema_c4_input').on('change',null, function(){
+                                modalContentInput_3.value = parseInt(modalContentInput_4.value) + parseInt(modalContentInput_2.value);
+                            });
+
+                            // send the edited data to the server as a new shift
+                            $("#submit_new").on('click', null, function(){
+                                postData('/test_shift_delete/', {
+                                    method: 'add',
+                                    start_period: modalContentInput_2.value, 
+                                    end_period: modalContentInput_3.value, 
+                                    shift_length: modalContentInput_4.value})
+                                .then(function(value){
+                                    console.log(value);
+                                    if(value.add_status === true)
+                                    {
+                                        // if delete was successfull redraw the table
+                                        table.draw()
+                                        alert("shift successfully added")
+                                        newButton.classList.remove('active');
+                                        newButton.classList.add('innactive');
+                                        newButtonAgain.classList.remove('inactive');
+                                        newButttonAgain.classList.add('active');
+
+                                    }else{
+                                        // if delete was not a success warn us
+                                        alert('The server encountered an error adding this item');
+                                    }
+                                    
+                                $('#submit_new_again').on('click',none, function(){
+                                        modalContentInput_2.innerText = "";
+                                        modalContentInput_3.innerText = "";
+                                        modalContentInput_4.innerText = "";
+                                        
+                                        newButton.classList.remove('innactive');
+                                        newButton.classList.add('active');
+                                        newButtonAgain.classList.remove('active');
+                                        newButttonAgain.classList.add('innactive');
+
+                                    });
+
+                                });
+                            });
+                            
+
+                        },
+                    },
                 ],
                 columns : [
                     { "data": [0] },
@@ -205,7 +304,7 @@
 
 
             // modal ON THE TABLE
-            $('tr').on('click', '.table-edit', function(e){
+            table.on('click', '.table-edit', function(e){
                 console.log(e);
 
                 
@@ -213,6 +312,8 @@
                 console.log(table_row);
 
                 var modalContent = document.getElementById('myModalContent');
+                var modalHeading = document.getElementById('modal-heading');
+                var shiftIdCol = document.getElementById('schema_c1');
                 var modalContentInput_1 = document.getElementById('schema_c1_input');
                 var modalContentInput_2 = document.getElementById('schema_c2_input');
                 var modalContentInput_3 = document.getElementById('schema_c3_input');
@@ -225,6 +326,23 @@
 
                 var modal = document.getElementById('myModal');
                 modal.style.display = "block";
+
+                // make the appropriate edit buttons visible
+                var editButton = document.getElementById('submit_edit');
+                var revertButton = document.getElementById('revert_edit');
+                var newButton = document.getElementById('submit_new');
+
+                modalHeading.innerText = "Edit Existing Shift";
+                shiftIdCol.classList.remove('inactive');
+                shiftIdCol.classList.add('active-table-row');
+
+                editButton.classList.remove('inactive');
+                editButton.classList.add('active');
+                revertButton.classList.remove('inactive');
+                revertButton.classList.add('active');
+                newButton.classList.remove('active');
+                newButton.classList.add('inactive');
+
                 
                 // setup handlers to alter the end time or shift legth depending on the other
                 $('#schema_c3_input').on('change',null, function(){
