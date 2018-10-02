@@ -282,10 +282,6 @@ class AJAX_ShiftEdit(MethodView):
 
         return jsonify({'test' : 1, 'data' : 'dataset'})
 
-        
-
-
-
 
 class ShiftTable(View):
 
@@ -312,6 +308,52 @@ class ShiftGantt(View):
         return render_template('gantt_example.html')
 
 
+class AdminEmployee(MethodView):
+
+    @staticmethod
+    def add_new_employee(json_data):
+
+        # add employee and skill asignments
+        max_employee_id = db.session.query(
+            db.func.max(models.Employee.id)).first()[0]
+
+        if max_employee_id == None:
+            #if the shift db is empty init the shift id
+            max_employee_id = 0
+        else:
+            max_employee_id += 1
+
+        db.session.add(models.Employee(
+
+        ))
+
+
+
+
+
+        pass
+
+
+    def get(self):
+        return render_template('admin_employee.html')
+
+    def post(self):
+
+
+
+        if rquest.data['postMethod'] == 'add':
+            pass
+        elif request.data['postMethod'] == 'delete':
+            pass
+        elif request.data['postMethod'] == 'edit':
+            pass
+
+        pass
+
+    pass
+
+
+
 app.add_url_rule('/index/', view_func=PrimaryView.as_view('index'))
 app.add_url_rule('/chart/', view_func=PeriodChart.as_view('period_chart'))
 app.add_url_rule('/gantt/', view_func=ShiftGantt.as_view('gantt_chart'))
@@ -321,3 +363,6 @@ app.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 app.add_url_rule('/test_shiftTable/', view_func=AJAX_ShiftTable.as_view('shiftTable'))
 app.add_url_rule('/test_shift/', view_func=ShiftTable.as_view('shift'))
 app.add_url_rule('/test_shift_delete/', view_func=AJAX_ShiftEdit.as_view('shift_delete'))
+
+# Employee admin Views
+app.add_url_rule('/admin_employee/', view_func=AdminEmployee.as_view('adminEmployee'))

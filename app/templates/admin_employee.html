@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block body %}
+
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/admin_employee.css') }}">
+<script src="{{ url_for('static', filename='admin_employee.js') }}"></script> 
+
+<h3>Table of employee data</h3>
+
+<div id="employee_tb_container">
+    
+    <!-- the modal containing forms for editing the employee dataset -->
+    <div id="employee_tb-form_container_modal" class="modal">
+        <div id="employee_tb-form_container_modal-content_container", class="modal-content">
+            <span class="close">&times;</span>
+            
+        
+
+        </div>
+    </div>
+
+</div>
+
+
+ <!-- Forms go here -->
+
+            <!-- add employee form -->
+            <div id="employee_tb-form_container_modal-add_new_employee" class="form active">
+                <h3>Add a new employee:</h3>
+                <div class="form-content-container">
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input class="name" type="text" placeholder="Fist Name">
+                            <input class="name" type="text" placeholder="last Name">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input type="text" placeholder="Username">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input type="text" placeholder="Email Address">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input type="text" placeholder="Phone Number">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input type="text" placeholder="Tax File Number">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <select >
+                                <option value="">Enterprise Agreement</option>
+                                <!-- inject EA here -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <select  multiple>
+                                <option value="">Skill 1</option>
+                                <option value="">Skill 2</option>
+                                <option value="">Skill 3</option>
+                                <!-- inject Skillsets here -->
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            <button>
+                <i class="spinner"></i>
+                <span class="state">Log in</span>
+            </button>
+            </div>
+    
+                <!-- edit employee form -->
+                <div id="employee_tb-form_container_modal-edit_existing_employee" class="form active">
+                        <p>Add a new employee:</p>
+                        <div class="form-content-container">
+                            <div class="form-content-row">
+                                <div class="form-row-label"></div>
+                                <div class="form-row-input">
+                                    <input type="text">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+<h3>Form to add a new empployee</h3>
+
+
+{% endblock %}
