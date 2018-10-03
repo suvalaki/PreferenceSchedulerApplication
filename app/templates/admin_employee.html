@@ -28,53 +28,113 @@
                 <h3>Add a new employee:</h3>
                 <div class="form-content-container">
 
-                    <div class="form-content-row">
-                        <div class="form-row-input">
-                            <input class="name" type="text" placeholder="Fist Name">
-                            <input class="name" type="text" placeholder="last Name">
-                        </div>
-                    </div>
+                    <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
+
+                    <p>{{ csrf_token() }}</p>
+                    <p>{{ csrf_token() }}</p>
+
+                    <p>Employee Data</p>
 
                     <div class="form-content-row">
                         <div class="form-row-input">
-                            <input type="text" placeholder="Username">
+                            <input id="input_first_name" class="half" type="text" placeholder="Fist Name">
+                            <input id="input_last_name" class="half" type="text" placeholder="last Name">
                         </div>
                     </div>
-
+                    
                     <div class="form-content-row">
                         <div class="form-row-input">
-                            <input type="text" placeholder="Email Address">
-                        </div>
-                    </div>
-
-                    <div class="form-content-row">
-                        <div class="form-row-input">
-                            <input type="text" placeholder="Phone Number">
-                        </div>
-                    </div>
-
-                    <div class="form-content-row">
-                        <div class="form-row-input">
-                            <input type="text" placeholder="Tax File Number">
-                        </div>
-                    </div>
-
-                    <div class="form-content-row">
-                        <div class="form-row-input">
-                            <select >
-                                <option value="">Enterprise Agreement</option>
-                                <!-- inject EA here -->
+                            <select id="gener_input">
+                                <option value="">Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
                             </select>
                         </div>
                     </div>
 
+                    <p>Date of Birth</p>
+
+                    <div class="form-content-row">
+                    
+                        <div class="form-row-input">
+                            <input id="input_DoB" type="date" >
+                        </div>
+                    </div>
+
+                    <p>Contact Detail</p>
+
                     <div class="form-content-row">
                         <div class="form-row-input">
-                            <select  multiple>
-                                <option value="">Skill 1</option>
-                                <option value="">Skill 2</option>
-                                <option value="">Skill 3</option>
+                            <input id="input_username" type="text" placeholder="Username">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input id="input_email" type="text" placeholder="Email Address">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input id="input_phone" type="text" placeholder="Phone Number">
+                        </div>
+                    </div>
+
+                    <p>Emergency Contact</p>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input id="input_em_contact" type="text" placeholder="Emergency Contact Name">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input id="input_em_r" type="text" placeholder="Emergency Contact Relationship">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input id="input_em_phone" type="text" placeholder="Emergency Contact Phone">
+                        </div>
+                    </div>
+
+                    <p>Financial Detail</p>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <input id="input_tfn" type="text" placeholder="Tax File Number">
+                        </div>
+                    </div>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <select id="input_ea">
+                                <option value="">Enterprise Agreement</option>
+                                <!-- inject EA here -->
+                                {% for ea in enterprise_agreement %}
+
+                                <option value="{{ea[0]}}"></option>
+
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <p>Employment Detail</p>
+
+                    <div class="form-content-row">
+                        <div class="form-row-input">
+                            <select id="input_skills" multiple>
                                 <!-- inject Skillsets here -->
+                                {% for skill in skills %}
+                                
+                                <option value="{{ skill[0] }}">{{ skill[1] }}</option>
+
+                                {% endfor %}
+                                
                             </select>
                         </div>
                     </div>
@@ -82,11 +142,14 @@
                 </div>
             <button>
                 <i class="spinner"></i>
-                <span class="state">Log in</span>
+                <span class="state">Submit</span>
             </button>
             </div>
     
-                <!-- edit employee form -->
+
+
+
+        <!-- edit employee form -->
                 <div id="employee_tb-form_container_modal-edit_existing_employee" class="form active">
                         <p>Add a new employee:</p>
                         <div class="form-content-container">

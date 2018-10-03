@@ -3,14 +3,39 @@
 
 #https://github.com/wbkd/awesome-d3
 
-from flask import render_template, request, json
+from flask import render_template, request, json, session
 from flask.views import View, MethodView
 from app import app
+#app and session are defined in __init__.py . everything in init.py gets defined when referencing the containing folder in python
 from app import db, models
 import random
+import string
 import matplotlib
 import matplotlib.cm as cm
 from flask.json import jsonify
+from flask.ext.api import status
+# return content, status.HTTP_404_NOT_FOUND - https://www.flaskapi.org/api-guide/status-codes/
+
+
+# CSRF TOKENS - http://flask.pocoo.org/snippets/3/
+
+random.seed(app.config['CSRF_RANDOM_SEED'])
+
+random_string = lambda length: ''.join(random.sample(string.printable, length))
+
+@app.before_request
+def csrf_protect():
+    if request.method == "POST":
+        token = session.pop('_csrf_token', None)
+        if not token or token != request.form.get('_csrf_token'):
+            abort(403)
+
+def generate_csrf_token():
+    if '_csrf_token' not in session:
+        session['_csrf_token'] = random_string(app.config['CSRF_STRING_SIZE'])
+    return session['_csrf_token']
+
+app.jinja_env.globals['csrf_token'] = generate_csrf_token   
 
 
 # REQUESTS https://stackoverflow.com/questions/10434599/how-to-get-data-received-in-flask-request
@@ -308,6 +333,7 @@ class ShiftGantt(View):
         return render_template('gantt_example.html')
 
 
+
 class AdminEmployee(MethodView):
 
     @staticmethod
@@ -335,13 +361,19 @@ class AdminEmployee(MethodView):
 
 
     def get(self):
-        return render_template('admin_employee.html')
+
+        # get the skills to append to the form
+        skills = db.session.query(models.Skill.id, models.Skill.name).all()
+        ea = db.session.query(models.EnterpriseAgreement.id, models.EnterpriseAgreement.name).all()
+
+
+        return render_template('admin_employee.html' , skills = skills, enterprise_agreement = ea)
 
     def post(self):
 
 
 
-        if rquest.data['postMethod'] == 'add':
+        if request.data['postMethod'] == 'add':
             pass
         elif request.data['postMethod'] == 'delete':
             pass

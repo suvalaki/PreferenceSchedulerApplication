@@ -5,6 +5,12 @@ from flask_login import LoginManager
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+#http://flask.pocoo.org/docs/1.0/api/
+
+# how http requests work https://www.webnots.com/what-is-http/
+# how session cookies work https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies
+# session gets held by the browser using th http request header <set_cookie> 
+
 class Config(object):
     # ...
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
@@ -12,6 +18,8 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG=True
     SECRET_KEY='123124'
+    CSRF_STRING_SIZE = 20 
+    CSRF_RANDOM_SEED = 1992
 
 
 #app.create_app()
