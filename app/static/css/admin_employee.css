@@ -94,6 +94,11 @@
   padding: 10px;
 }
 
+.form-content-container select[multiple]{
+    max-height:100%;
+    height: 100%;
+}
+
 .form-content-container input[type="date"]{ 
     height: 40px;
 }

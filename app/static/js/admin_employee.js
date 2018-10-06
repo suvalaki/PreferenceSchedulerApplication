@@ -19,30 +19,27 @@ function postData(url = ``, data = {}) {
 
 
 
-function addNewEmployeeToTable(jsonResponse){
+function checkPostFormRequest(jsonResponse){
     // update the datatable to show the new employee
-
     var table = $('#table_id').DataTable();
 
     if (jsonResponse.post_status === true) {
         // the server executed the 'add' successfully
-        
-        table.draw()
-
+        table.draw();
     } else {
         // the server has failed to execure the 'add'
         alert('The server encountered an error adding this item');
 
     }
-
-
 }
 
 
 function postEmployee(){
     // post a new employee to the server
 
-    data = {
+    //var table = $('#table_id').DataTable();
+
+    var data = {
         first_name: document.getElementById('input_first_name').value,
         last_name : document.getElementById('input_last_name').value,
         gender    : document.getElementById('gener_input').value,
@@ -55,14 +52,29 @@ function postEmployee(){
         em_phone  : document.getElementById('input_em_phone').value,
         fin_tfn   : document.getElementById('input_tfn').value,
         ea        : document.getElementById('input_ea').value,
-        skills    : document.getElementById('input_skills').value,
+        // https://stackoverflow.com/questions/11821261/how-to-get-all-selected-values-from-select-multiple-multiple
+        skills    : $('#input_skills').val(),
     };
 
-    postRequestType = "newEmployee";
+    var postRequestType = "add";
+    var _csrf_token =  document.getElementById('_csrf_token').value;
 
-    postData('/admin_employee/',{postMethod: postRequestType, adddData: data})
-        .then(response => addNewEmployeeToTable(response))
-        .catch();
+    postData('/admin_employee/',{postMethod: postRequestType, adddData: data,
+        _csrf_token: _csrf_token})
+        //.then(table.draw())
+        .then(response => console.log(response))
+        // https://www.tjvantoll.com/2015/09/13/fetch-and-errors/
+        .catch(error => console.log(error));
 
 
 }
+
+
+$( document ).ready(function(){
+
+    $('#submitNewEmployee').on('click', null, function(){
+        console.log('button pushed');
+        postEmployee();
+    });    
+
+})

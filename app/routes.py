@@ -3,7 +3,7 @@
 
 #https://github.com/wbkd/awesome-d3
 
-from flask import render_template, request, json, session
+from flask import render_template, request, json, session, abort
 from flask.views import View, MethodView
 from app import app
 #app and session are defined in __init__.py . everything in init.py gets defined when referencing the containing folder in python
@@ -13,7 +13,12 @@ import string
 import matplotlib
 import matplotlib.cm as cm
 from flask.json import jsonify
-from flask.ext.api import status
+
+
+# hashed passwords
+
+
+#from flask.ext.api import status
 # return content, status.HTTP_404_NOT_FOUND - https://www.flaskapi.org/api-guide/status-codes/
 
 
@@ -27,7 +32,10 @@ random_string = lambda length: ''.join(random.sample(string.printable, length))
 def csrf_protect():
     if request.method == "POST":
         token = session.pop('_csrf_token', None)
-        if not token or token != request.form.get('_csrf_token'):
+        print(token)
+        print(request.get_json().keys())
+        if not token or token != request.get_json()['_csrf_token']:
+            print(request.get_json())
             abort(403)
 
 def generate_csrf_token():
@@ -37,6 +45,10 @@ def generate_csrf_token():
 
 app.jinja_env.globals['csrf_token'] = generate_csrf_token   
 
+
+
+def new_employee_default_password(username):
+    return username + '1234'
 
 # REQUESTS https://stackoverflow.com/questions/10434599/how-to-get-data-received-in-flask-request
 
@@ -337,7 +349,8 @@ class ShiftGantt(View):
 class AdminEmployee(MethodView):
 
     @staticmethod
-    def add_new_employee(json_data):
+    def add_new_employee(first_name, last_name, gender, dob, username, email,
+        phone, em_contact, em_rel, em_phone, fin_tfn, ea, skills):
 
         # add employee and skill asignments
         max_employee_id = db.session.query(
@@ -350,34 +363,145 @@ class AdminEmployee(MethodView):
             max_employee_id += 1
 
         db.session.add(models.Employee(
-
+            id = max_employee_id,
+            username = username,
+            email = email, 
+            password_hash = new_employee_default_password(username),
+            agreement = ea
         ))
 
+        #align employee skills
+        max_skill_alignment_id = db.session.query(
+            db.func.max(models.SkillAssignment.id)).first()[0]
+
+        if max_skill_alignment_id == None:
+            max_skill_alignment_id = 0
+        else:
+            max_skill_alignment_id += 1
+
+        for skill in skills:
+            db.session.add(models.SkillAssignment(
+                id = max_skill_alignment_id,
+                skill = skill,
+                employee = max_employee_id
+            ))
+            max_skill_alignment_id += 1
+
+        db.session.commit()
+
+        #https://stackoverflow.com/questions/26079754/flask-how-to-return-a-success-status-code-for-ajax-call
+        pass
+
+    @staticmethod
+    def del_employee(id):
+
+        db.session.query(models.Employee)\
+        .filter(models.Employee.id.in_(id))\
+        .delete(synchronize_session=False)
+
+        db.session.query(models.SkillAssignment)\
+        .filter(models.SkillAssignment.shift.in_(id))\
+        .delete(synchronize_session=False)
+
+        db.session.commit()
+        pass
+
+    def edit_employee(id, **kwargs):
+
+        emp = db.session.query(models.Employee)\
+            .filter(models.Employee.id == id).first()
+        emp_skills = db.session.query(models.SkillAssignment)\
+            .filter(models.SkillAssignment.employee == id).all()
+
+        # alter the employee specific information
+        for kwarg in kwargs:
+            if kwarg in ['username','email','password_hash','agreement']:
+                setattr(emp, kwarg, kwargs[kwarg])
+
+        # remove, check and add skill asignments where applicable
+        if 'skill' in kwargs:
+            skills_current = [] 
+            for emp_skill in emp_skills:
+                if emp_skill.skill not in kwargs['skill']:
+                    emp_skill.delete(synchronize_session=False)
+                else:
+                    skills_current.append(emp_skill.skill)
+            
+
+            max_skill_alignment_id = db.session.query(
+                db.func.max(models.SkillAssignment.id)).first()[0]
+
+            if max_skill_alignment_id == None:
+                max_skill_alignment_id = 0
+            else:
+                max_skill_alignment_id += 1
 
 
+            for sk in kwargs['skill']:
+                if sk not in skills_current:
+                    # add those skills which were missing
+                    db.session.add(models.SkillAssignment(
+                        id = max_skill_alignment_id,
+                        skill = sk,
+                        employee = id
+                    ))
+                    max_skill_alignment_id += 1
 
+        db.session.commit()
+                
 
         pass
+
+
 
 
     def get(self):
 
         # get the skills to append to the form
         skills = db.session.query(models.Skill.id, models.Skill.name).all()
-        ea = db.session.query(models.EnterpriseAgreement.id, models.EnterpriseAgreement.name).all()
+        ea = db.session.query(models.EnterpriseAgreement.id, 
+            models.EnterpriseAgreement.name).all()
+        print(ea)
 
-
-        return render_template('admin_employee.html' , skills = skills, enterprise_agreement = ea)
+        return render_template('admin_employee.html' , skills = skills, 
+            enterprise_agreement = ea)
 
     def post(self):
 
+        request_data = request.get_json()
 
+        print('printing)')
+        print(request.data)
 
-        if request.data['postMethod'] == 'add':
+        first_name = request_data['adddData']["first_name"]
+        last_name = request_data['adddData']["last_name"]
+        gender = request_data['adddData']["gender"]
+        dob = request_data['adddData']["dob"]
+        username = request_data['adddData']["username"]
+        email = request_data['adddData']["email"]
+        phone =  request_data['adddData']["phone"]
+        em_contact =  request_data['adddData']["em_contact"]
+        em_rel =  request_data['adddData']["em_rel"]
+        em_phone  = request_data['adddData']["em_phone"]
+        fin_tfn  = request_data['adddData']["fin_tfn"]
+        ea = request_data['adddData']["ea"]
+        skills = request_data['adddData']["skills"]
+
+        if request_data['postMethod'] == 'add':
+
+            try:
+                self.add_new_employee(first_name, last_name, gender, dob, username, 
+                    email, phone, em_contact, em_rel, em_phone, fin_tfn, ea, skills)
+
+                return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+
+            except:
+
+                return json.dumps({'success':False}), 403, {'ContentType':'application/json'} 
+
+        elif request_data['postMethod'] == 'delete':
             pass
-        elif request.data['postMethod'] == 'delete':
-            pass
-        elif request.data['postMethod'] == 'edit':
+        elif request_data['postMethod'] == 'edit':
             pass
 
         pass

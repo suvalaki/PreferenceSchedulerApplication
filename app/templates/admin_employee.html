@@ -2,7 +2,7 @@
 {% block body %}
 
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/admin_employee.css') }}">
-<script src="{{ url_for('static', filename='admin_employee.js') }}"></script> 
+<script src="{{ url_for('static', filename='js/admin_employee.js') }}"></script> 
 
 <h3>Table of employee data</h3>
 
@@ -28,7 +28,7 @@
                 <h3>Add a new employee:</h3>
                 <div class="form-content-container">
 
-                    <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
+                    <input id="_csrf_token" name=_csrf_token type=hidden value="{{ csrf_token() }}">
 
                     <p>{{ csrf_token() }}</p>
                     <p>{{ csrf_token() }}</p>
@@ -113,10 +113,10 @@
                         <div class="form-row-input">
                             <select id="input_ea">
                                 <option value="">Enterprise Agreement</option>
-                                <!-- inject EA here -->
+                                <!--inject EA here -->
                                 {% for ea in enterprise_agreement %}
 
-                                <option value="{{ea[0]}}"></option>
+                                <option value="{{ ea[0] }}">{{ ea[1] }}</option>
 
                                 {% endfor %}
                             </select>
@@ -140,7 +140,7 @@
                     </div>
 
                 </div>
-            <button>
+            <button id="submitNewEmployee">
                 <i class="spinner"></i>
                 <span class="state">Submit</span>
             </button>
@@ -163,7 +163,14 @@
                     </div>
 
 
-<h3>Form to add a new empployee</h3>
+    <!-- Table of employees -->
+
+        <div id="employee_table_container">
+            
+        </div>
+
+
+    <!-- table of employee skills -->
 
 
 {% endblock %}
