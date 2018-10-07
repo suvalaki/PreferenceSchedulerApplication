@@ -20,45 +20,40 @@ from wtforms.validators import DataRequired, Email
 from werkzeug.datastructures import MultiDict
 from flask_inputs import Inputs # https://pythonhosted.org/Flask-Inputs/
 
-class MyForm(FlaskForm):
-    name = StringField('name', validators=[DataRequired()])
-
-class EmployeeInputValidation(Inputs):
-    values = {
-        'username': [DataRequired(),]
-    }
-    
-class test_response:
-    values = MultiDict(mapping={'username':'david'})
-
-
-class response_test(Inputs):
-
-    def __init__(self, json_dict):
-
-        self.values = MultiDict(mapping=json_dict)
-
 
 def nested_class_test(json_dict, value_rule_dict):
+    """
+    Function to produce a dynamic class for validation checking
+    Flattens a nested dict down
+
+    Example usage:
+        test_case_false = nested_class_test({'username':None},
+                                {'username': [DataRequired(),]})
+        test_case_false.validate()       
+
+        returns False                   
+    """
+    def flatten(d, parent_key='', sep='___'):
+        # https://stackoverflow.com/questions/6027558/flatten-nested-python-dictionaries-compressing-keys
+        items = []
+        for k, v in d.items():
+            new_key = parent_key + sep + k if parent_key else k
+            if isinstance(v, collections.MutableMapping):
+                items.extend(flatten(v, new_key, sep=sep).items())
+            else:
+                items.append((new_key, v))
+        return dict(items)
 
     class inner_value_class:
-
         def __init__(self, json_dict):
-            self.values = MultiDict(mapping = json_dict)
+            self.values = MultiDict(mapping = flatten(json_dict))
 
     class inner_rule_class(Inputs):
-
-        values = value_rule_dict
-
+        values = flatten(value_rule_dict)
 
     return inner_rule_class(inner_value_class(json_dict))
 
 
-
-z = test_response()
-
-test_val = EmployeeInputValidation(z)
-test_val.validate()
 
 
 # https://stackoverflow.com/questions/32062097/using-flask-wtforms-validators-without-using-a-form
@@ -520,12 +515,6 @@ class AdminEmployee(MethodView):
 
         request_data = request.get_json()
         # test wtforms multidict mapping without html jinja injection
-        
-        print('defining input')
-        inputs = EmployeeInputValidation(request_data['addData'])
-        print('validation')
-        print(inputs.validate())
-
 
         # Data is correct
 
@@ -546,6 +535,7 @@ class AdminEmployee(MethodView):
         if request_data['postMethod'] == 'add':
 
             try:
+
                 self.add_new_employee(first_name, last_name, gender, dob, username, 
                     email, phone, em_contact, em_rel, em_phone, fin_tfn, ea, skills)
 
