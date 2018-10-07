@@ -59,7 +59,7 @@ function postEmployee(){
     var postRequestType = "add";
     var _csrf_token =  document.getElementById('_csrf_token').value;
 
-    postData('/admin_employee/',{postMethod: postRequestType, adddData: data,
+    postData('/admin_employee/',{postMethod: postRequestType, addData: data,
         _csrf_token: _csrf_token})
         //.then(table.draw())
         .then(response => console.log(response))

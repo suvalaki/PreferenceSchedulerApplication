@@ -14,6 +14,54 @@ import matplotlib
 import matplotlib.cm as cm
 from flask.json import jsonify
 
+from flask_wtf import FlaskForm
+from wtforms import StringField
+from wtforms.validators import DataRequired, Email
+from werkzeug.datastructures import MultiDict
+from flask_inputs import Inputs # https://pythonhosted.org/Flask-Inputs/
+
+class MyForm(FlaskForm):
+    name = StringField('name', validators=[DataRequired()])
+
+class EmployeeInputValidation(Inputs):
+    values = {
+        'username': [DataRequired(),]
+    }
+    
+class test_response:
+    values = MultiDict(mapping={'username':'david'})
+
+
+class response_test(Inputs):
+
+    def __init__(self, json_dict):
+
+        self.values = MultiDict(mapping=json_dict)
+
+
+def nested_class_test(json_dict, value_rule_dict):
+
+    class inner_value_class:
+
+        def __init__(self, json_dict):
+            self.values = MultiDict(mapping = json_dict)
+
+    class inner_rule_class(Inputs):
+
+        values = value_rule_dict
+
+
+    return inner_rule_class(inner_value_class(json_dict))
+
+
+
+z = test_response()
+
+test_val = EmployeeInputValidation(z)
+test_val.validate()
+
+
+# https://stackoverflow.com/questions/32062097/using-flask-wtforms-validators-without-using-a-form
 
 # hashed passwords
 
@@ -200,6 +248,7 @@ class AJAX_ShiftEdit(MethodView):
             # https://stackoverflow.com/questions/39773560/sqlalchemy-how-do-you-delete-multiple-rows-without-querying
             #sql alchemy bulk deletion
             # https://docs.sqlalchemy.org/en/latest/orm/query.html
+
 
             try:
                 db.session.query(models.Shift)\
@@ -457,6 +506,7 @@ class AdminEmployee(MethodView):
 
     def get(self):
 
+        form = MyForm()
         # get the skills to append to the form
         skills = db.session.query(models.Skill.id, models.Skill.name).all()
         ea = db.session.query(models.EnterpriseAgreement.id, 
@@ -464,28 +514,34 @@ class AdminEmployee(MethodView):
         print(ea)
 
         return render_template('admin_employee.html' , skills = skills, 
-            enterprise_agreement = ea)
+            enterprise_agreement = ea, form = form)
 
     def post(self):
 
         request_data = request.get_json()
+        # test wtforms multidict mapping without html jinja injection
+        
+        print('defining input')
+        inputs = EmployeeInputValidation(request_data['addData'])
+        print('validation')
+        print(inputs.validate())
 
-        print('printing)')
-        print(request.data)
 
-        first_name = request_data['adddData']["first_name"]
-        last_name = request_data['adddData']["last_name"]
-        gender = request_data['adddData']["gender"]
-        dob = request_data['adddData']["dob"]
-        username = request_data['adddData']["username"]
-        email = request_data['adddData']["email"]
-        phone =  request_data['adddData']["phone"]
-        em_contact =  request_data['adddData']["em_contact"]
-        em_rel =  request_data['adddData']["em_rel"]
-        em_phone  = request_data['adddData']["em_phone"]
-        fin_tfn  = request_data['adddData']["fin_tfn"]
-        ea = request_data['adddData']["ea"]
-        skills = request_data['adddData']["skills"]
+        # Data is correct
+
+        first_name = request_data['addData']["first_name"]
+        last_name = request_data['addData']["last_name"]
+        gender = request_data['addData']["gender"]
+        dob = request_data['addData']["dob"]
+        username = request_data['addData']["username"]
+        email = request_data['addData']["email"]
+        phone =  request_data['addData']["phone"]
+        em_contact =  request_data['addData']["em_contact"]
+        em_rel =  request_data['addData']["em_rel"]
+        em_phone  = request_data['addData']["em_phone"]
+        fin_tfn  = request_data['addData']["fin_tfn"]
+        ea = request_data['addData']["ea"]
+        skills = request_data['addData']["skills"]
 
         if request_data['postMethod'] == 'add':
 

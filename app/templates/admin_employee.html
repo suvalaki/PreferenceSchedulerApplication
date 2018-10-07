@@ -67,7 +67,7 @@
                         <div class="form-row-input">
                             <input id="input_username" type="text" placeholder="Username">
                         </div>
-                    </div>
+                    </div>   
 
                     <div class="form-content-row">
                         <div class="form-row-input">
@@ -166,11 +166,13 @@
     <!-- Table of employees -->
 
         <div id="employee_table_container">
-            
+
+                {{ form.name.label }} {{ form.name(size=20) }}
+
+        
         </div>
 
 
     <!-- table of employee skills -->
-
 
 {% endblock %}
