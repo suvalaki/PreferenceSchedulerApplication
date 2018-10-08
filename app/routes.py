@@ -14,9 +14,10 @@ import matplotlib
 import matplotlib.cm as cm
 from flask.json import jsonify
 
+import collections
 from flask_wtf import FlaskForm
 from wtforms import StringField
-from wtforms.validators import DataRequired, Email
+from wtforms import validators as valid
 from werkzeug.datastructures import MultiDict
 from flask_inputs import Inputs # https://pythonhosted.org/Flask-Inputs/
 
@@ -70,6 +71,12 @@ def nested_class_test(json_dict, value_rule_dict):
 random.seed(app.config['CSRF_RANDOM_SEED'])
 
 random_string = lambda length: ''.join(random.sample(string.printable, length))
+
+# https://stackoverflow.com/questions/19574694/flask-hit-decorator-before-before-request-signal-fires
+
+def exclude_from_csrf(func):
+    func._exclude_from_csrf = True
+    return func
 
 @app.before_request
 def csrf_protect():
@@ -501,7 +508,7 @@ class AdminEmployee(MethodView):
 
     def get(self):
 
-        form = MyForm()
+
         # get the skills to append to the form
         skills = db.session.query(models.Skill.id, models.Skill.name).all()
         ea = db.session.query(models.EnterpriseAgreement.id, 
@@ -509,7 +516,7 @@ class AdminEmployee(MethodView):
         print(ea)
 
         return render_template('admin_employee.html' , skills = skills, 
-            enterprise_agreement = ea, form = form)
+            enterprise_agreement = ea)
 
     def post(self):
 
@@ -534,8 +541,35 @@ class AdminEmployee(MethodView):
 
         if request_data['postMethod'] == 'add':
 
+            # hook up form validator here "nested_class_test"
+            add_validator = nested_class_test(request_data['addData'], 
+                {
+                    'first_name':[
+                        valid.DataRequired('first_name - DataRequired'),
+                        valid.Length(1, 26, "first_name - Length")
+                        ],
+                    'last_name':[
+                        valid.DataRequired('last_name - DataRequired'),
+                        valid.Length(1, 26, "last_name - Length")
+                        ],
+                    'gender':[
+                        valid.InputRequired('gender - InputRequired'),
+                        valid.AnyOf(['Male',"Female"], 'gender - AnyOf')
+                    ],
+                    'dob':[
+                        valid.DataRequired('dob - DataRequired'),
+                    ],
+                })
+
+            #validate errors - return errors
+            if add_validator.validate() == False:
+                return json.dumps({'success':False, \
+                    'errors':add_validator.errors }), \
+                    400, {'ContentType':'application/json'} 
+
             try:
 
+                # add to database
                 self.add_new_employee(first_name, last_name, gender, dob, username, 
                     email, phone, em_contact, em_rel, em_phone, fin_tfn, ea, skills)
 
@@ -554,6 +588,23 @@ class AdminEmployee(MethodView):
 
     pass
 
+class CSRFAjax(MethodView):
+
+    decorators = [exclude_from_csrf]
+
+    def get(self):
+
+        if '_csrf_token' not in session:
+            token = generate_csrf_token()
+
+            return json.dumps({'success':True, 'token':token}), \
+                200, {'ContentType':'application/json'} 
+
+        else:
+            return json.dumps({'success':False}), \
+                400, {'ContentType':'application/json'}
+
+
 
 
 app.add_url_rule('/index/', view_func=PrimaryView.as_view('index'))
@@ -568,3 +619,6 @@ app.add_url_rule('/test_shift_delete/', view_func=AJAX_ShiftEdit.as_view('shift_
 
 # Employee admin Views
 app.add_url_rule('/admin_employee/', view_func=AdminEmployee.as_view('adminEmployee'))
+
+# helper AJAX views
+app.add_url_rule('/csrf_ajax/', view_func=CSRFAjax.as_view('csrf_ajax'))

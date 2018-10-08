@@ -17,13 +17,39 @@ function postData(url = ``, data = {}) {
     .then(response => response.json()); // parses response to JSON
 }
 
+function update_csrf_after_post(){
 
+    var _csrf_token =  document.getElementById('_csrf_token');
+    var _csrf_p = document.getElementById('CSRF_PARAGRAPH');
+    
+    fetch('/csrf_ajax/')
+    .then(function(response) {
+        return response.json();
+      })
+      .then(function(myJson) {
+        console.log(JSON.stringify(myJson));
+        return myJson
+      })     
+    .then(function(response){
+
+        console.log(response);
+
+        if(response.success === true){
+            _csrf_token.value = response.token;
+            _csrf_p.innerText = response.token;
+        }
+
+    });
+
+}
 
 function checkPostFormRequest(jsonResponse){
     // update the datatable to show the new employee
     var table = $('#table_id').DataTable();
 
     if (jsonResponse.post_status === true) {
+        // check the response for validation errors
+
         // the server executed the 'add' successfully
         table.draw();
     } else {
@@ -63,12 +89,13 @@ function postEmployee(){
         _csrf_token: _csrf_token})
         //.then(table.draw())
         .then(response => console.log(response))
+        .then(response => update_csrf_after_post());
         // https://www.tjvantoll.com/2015/09/13/fetch-and-errors/
-        .catch(error => console.log(error));
+        //.catch(error => console.log(error));
 
+    
 
 }
-
 
 $( document ).ready(function(){
 
