@@ -6,21 +6,24 @@
 
 <h3>Table of employee data</h3>
 
-<button id="add-employee-btn">add Employee</button>
+<button id="add-employee-btn">add</button>
 
 <div id="employee_tb_container">
     
     <!-- the modal containing forms for editing the employee dataset -->
     <div id="employee_tb-form_container_modal" class="modal">
-        <div id="employee_tb-form_container_modal-content_container", class="modal-content">
+        <div id="employee_tb-form_container_modal-content_container", class="modal-content form active">
             
-            
+            <span class="close">&times;</span>
             <!-- Forms go here -->
 
             <!-- add employee form -->
-            <div id="employee_tb-form_container_modal-add_new_employee" class="form active"></div>
-                <span id="modal-close-btn" class="close">&times;</span>
+
+            <div class="form-content-header">
+ 
                 <h3>Add a new employee</h3>
+            </div>
+
                 <div class="form-content-container">
 
                     <input id="_csrf_token" name=_csrf_token type=hidden value="{{ csrf_token() }}">
@@ -141,23 +144,20 @@
                 <span class="state">Submit</span>
             </button>
             </div>
-    
+            
+
         
 
-        </div>
+ 
     </div>
 
 </div>
 
 
 
-
     <!-- Table of employees -->
 
-        <div id="employee_table_container">
-
-        
-        </div>
+        <div id="employee_table_container"></div>
 
 
     <!-- table of employee skills -->

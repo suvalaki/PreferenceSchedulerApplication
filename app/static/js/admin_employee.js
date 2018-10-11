@@ -98,7 +98,6 @@ function postEmployee(){
 }
 
 
-
 function openModelForm(){
     document.getElementById('employee_tb-form_container_modal')
     .style.display = "block";
@@ -113,6 +112,10 @@ function openEmployeeFormAdd(){
     
 }
 
+
+function tableLoader(){
+    
+}
 
 $( document ).ready(function(){
 
