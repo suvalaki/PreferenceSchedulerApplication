@@ -97,11 +97,47 @@ function postEmployee(){
 
 }
 
+
+
+function openModelForm(){
+    document.getElementById('employee_tb-form_container_modal')
+    .style.display = "block";
+}
+
+
+function openEmployeeFormAdd(){
+    document.getElementById('function_marker')
+    .value = "add";
+    //open modal function here
+    openModelForm();
+    
+}
+
+
 $( document ).ready(function(){
 
     $('#submitNewEmployee').on('click', null, function(){
         console.log('button pushed');
         postEmployee();
-    });    
+    });   
+    
+    
+    // Get the <span> element that closes the modal
+    var modal = document.getElementById('employee_tb-form_container_modal');
+    var span = document.getElementsByClassName("close")[0];
+
+    $('#add-employee-btn').on('click',null,openEmployeeFormAdd);
+
+    // When the user clicks on <span> (x), close the modal
+    $('#modal-close-btn').on('click',null,function(){
+        $('#employee_tb-form_container_modal').style.display = "none";
+    })
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
 
 })

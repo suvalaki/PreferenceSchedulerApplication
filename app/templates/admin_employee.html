@@ -6,29 +6,26 @@
 
 <h3>Table of employee data</h3>
 
+<button id="add-employee-btn">add Employee</button>
+
 <div id="employee_tb_container">
     
     <!-- the modal containing forms for editing the employee dataset -->
     <div id="employee_tb-form_container_modal" class="modal">
         <div id="employee_tb-form_container_modal-content_container", class="modal-content">
-            <span class="close">&times;</span>
             
-        
-
-        </div>
-    </div>
-
-</div>
-
-
- <!-- Forms go here -->
+            
+            <!-- Forms go here -->
 
             <!-- add employee form -->
-            <div id="employee_tb-form_container_modal-add_new_employee" class="form active">
+            <div id="employee_tb-form_container_modal-add_new_employee" class="form active"></div>
+                <span id="modal-close-btn" class="close">&times;</span>
                 <h3>Add a new employee</h3>
                 <div class="form-content-container">
 
                     <input id="_csrf_token" name=_csrf_token type=hidden value="{{ csrf_token() }}">
+                    <input id="function_marker" name="form_function" type="hidden" value="">
+                    <input id="edit_id" name="edit_id" type="hidden" value="">
 
                     <p id="CSRF_PARAGRAPH">{{ csrf_token() }}</p>
 
@@ -145,21 +142,14 @@
             </button>
             </div>
     
+        
+
+        </div>
+    </div>
+
+</div>
 
 
-
-        <!-- edit employee form -->
-                <div id="employee_tb-form_container_modal-edit_existing_employee" class="form active">
-                        <p>Add a new employee:</p>
-                        <div class="form-content-container">
-                            <div class="form-content-row">
-                                <div class="form-row-label"></div>
-                                <div class="form-row-input">
-                                    <input type="text">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
 
     <!-- Table of employees -->
