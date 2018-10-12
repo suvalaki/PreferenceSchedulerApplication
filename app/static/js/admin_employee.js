@@ -82,7 +82,7 @@ function postEmployee(){
         skills    : $('#input_skills').val(),
     };
 
-    var postRequestType = "add";
+    var postRequestType = document.getElementById('function_marker').value;
     var _csrf_token =  document.getElementById('_csrf_token').value;
 
     postData('/admin_employee/',{postMethod: postRequestType, addData: data,
@@ -92,8 +92,6 @@ function postEmployee(){
         .then(response => update_csrf_after_post());
         // https://www.tjvantoll.com/2015/09/13/fetch-and-errors/
         //.catch(error => console.log(error));
-
-    
 
 }
 
@@ -105,8 +103,7 @@ function openModelForm(){
 
 
 function openEmployeeFormAdd(){
-    $('#form_heading').innerText = "Add a new employee";
- 
+    
 
     // reset form fields
     if ($('#function_marker').value  != "add"){
@@ -126,7 +123,8 @@ function openEmployeeFormAdd(){
 
     }
 
-    $('#function_marker').value = "add";
+    document.getElementById('form_heading').innerText = "Add a new employee";
+    document.getElementById('function_marker').value = "add";
 
     //open modal function here
     openModelForm();
@@ -134,9 +132,29 @@ function openEmployeeFormAdd(){
 }
 
 
-function openEmployeeEditForm(){
-    $('#form_heading').innerText = "Add a new employee";
-    $('#function_marker').value = "edit";
+function openEmployeeEditForm(table, e){
+
+    // query the database for the employee entity
+    var table_row = table.row( "#tab_id_" + e.currentTarget.dataset.id ).data();
+
+
+    // input the row data into the form
+    document.getElementById('input_first_name').value = "";
+    document.getElementById('input_last_name').value = "";
+    document.getElementById('input_DoB').value = "";
+    document.getElementById('input_username').value = table_row[1];
+    document.getElementById('input_email').value = table_row[2];
+    document.getElementById('input_phone').value = "";
+    document.getElementById('input_em_contact').value = "";
+    document.getElementById('input_em_r').value = "";
+    document.getElementById('input_em_phone').value = "";
+    document.getElementById('input_tfn').value = "";
+    document.getElementById('input_ea').value = table_row[3];
+    document.getElementById('input_skills').value = "";
+
+
+    document.getElementById('form_heading').innerText = "Edit existing employee";
+    document.getElementById('function_marker').value = "edit";
 
     //form fields replaced by entry form fields
 
@@ -153,7 +171,7 @@ function tableLoader(){
             return response.json();
         })
         .then(function(jsonResponse){
-            $('#employee_table_container').DataTable({
+            var table = $('#employee_table_container').DataTable({
                 data: jsonResponse["data"],
                 rowId: (a) => 'tab_id_' + a[0], //label rows 
                 dom: 'Bftrip', //create button
@@ -176,9 +194,21 @@ function tableLoader(){
                     }
                 ]
             });
+
+            // add entry event listeners
+            $('#add-employee-btn').on('click',null,openEmployeeFormAdd);
+
+            // edit row event listener
+            table.on('click', '.table-edit', function(e){
+                openEmployeeEditForm(table, e);
+            });
+
         });
 
+
     }
+
+// before the document is ready
 
 
 $( document ).ready(function(){
@@ -193,12 +223,15 @@ $( document ).ready(function(){
     var modal = document.getElementById('employee_tb-form_container_modal');
     var span = document.getElementsByClassName("close")[0];
 
-    $('#add-employee-btn').on('click',null,openEmployeeFormAdd);
 
     // When the user clicks on <span> (x), close the modal
     $('#modal-close-btn').on('click',null,function(){
-        $('#employee_tb-form_container_modal').style.display = "none";
-    })
+        $('#employee_tb-form_container_modal')[0].style.display = "none";
+    });
+
+    $('#close-btn').on('click',null,function(){
+        $('#employee_tb-form_container_modal')[0].style.display = "none";
+    });
 
     // When the user clicks anywhere outside of the modal, close it
     window.onclick = function(event) {
@@ -208,7 +241,8 @@ $( document ).ready(function(){
     }
 
 
-    // load the table
+    // load the table and its event handlers
     tableLoader();
+    
 
 })

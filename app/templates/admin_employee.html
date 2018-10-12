@@ -14,7 +14,7 @@
     <div id="employee_tb-form_container_modal" class="modal">
         <div id="employee_tb-form_container_modal-content_container", class="modal-content form active">
             
-            <span class="close">&times;</span>
+            <span id="close-btn" class="close">&times;</span>
             <!-- Forms go here -->
 
             <!-- add employee form -->
@@ -27,7 +27,7 @@
                 <div class="form-content-container">
 
                     <input id="_csrf_token" name=_csrf_token type=hidden value="{{ csrf_token() }}">
-                    <input id="function_marker" name="form_function" type="hidden" value="">
+                    <input id="function_marker" name="form_function" type="hidden" value="add">
                     <input id="edit_id" name="edit_id" type="hidden" value="">
 
                     <p id="CSRF_PARAGRAPH">{{ csrf_token() }}</p>
@@ -83,18 +83,21 @@
                     <p>Emergency Contact</p>
 
                     <div class="form-content-row">
+                        Emergency Contact Name
                         <div class="form-row-input">
                             <input id="input_em_contact" type="text" placeholder="Emergency Contact Name">
                         </div>
                     </div>
 
                     <div class="form-content-row">
+                        Emergency Contact Relationship
                         <div class="form-row-input">
                             <input id="input_em_r" type="text" placeholder="Emergency Contact Relationship">
                         </div>
                     </div>
 
                     <div class="form-content-row">
+                        Emergency Contact Phone
                         <div class="form-row-input">
                             <input id="input_em_phone" type="text" placeholder="Emergency Contact Phone">
                         </div>
@@ -103,12 +106,14 @@
                     <p>Financial Detail</p>
 
                     <div class="form-content-row">
+                        Tax File Number
                         <div class="form-row-input">
                             <input id="input_tfn" type="text" placeholder="Tax File Number">
                         </div>
                     </div>
 
                     <div class="form-content-row">
+                        Enterprise Agreement
                         <div class="form-row-input">
                             <select id="input_ea">
                                 <option value="">Enterprise Agreement</option>
@@ -126,6 +131,7 @@
 
                     <div class="form-content-row">
                         <div class="form-row-input">
+                            Skillset
                             <select id="input_skills" multiple>
                                 <!-- inject Skillsets here -->
                                 {% for skill in skills %}
@@ -157,7 +163,20 @@
 
     <!-- Table of employees -->
 
-        <table id="employee_table_container"></table>
+        <table id="employee_table_container">
+
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Agreement</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+        </table>
 
 
     <!-- table of employee skills -->
