@@ -109,7 +109,7 @@ function openEmployeeFormAdd(){
  
 
     // reset form fields
-    if (('#function_marker').value  != "add"){
+    if ($('#function_marker').value  != "add"){
 
         document.getElementById('input_first_name').value = "";
         document.getElementById('input_last_name').value = "";
