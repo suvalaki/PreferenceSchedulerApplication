@@ -588,6 +588,19 @@ class AdminEmployee(MethodView):
 
     pass
 
+
+class AJAX_AdminEmployeeTable(MethodView):
+
+    def get(self):
+
+        employees =  [list(x) for x in db.session.execute(
+            "SELECT id, username, email, agreement FROM employee"
+        )]
+
+        return json.jsonify(data = employees)
+
+
+
 class CSRFAjax(MethodView):
 
     decorators = [exclude_from_csrf]
@@ -619,6 +632,8 @@ app.add_url_rule('/test_shift_delete/', view_func=AJAX_ShiftEdit.as_view('shift_
 
 # Employee admin Views
 app.add_url_rule('/admin_employee/', view_func=AdminEmployee.as_view('adminEmployee'))
+app.add_url_rule('/admin_employee_table/', view_func=AJAX_AdminEmployeeTable.as_view('adminEmployeeTable'))
+
 
 # helper AJAX views
 app.add_url_rule('/csrf_ajax/', view_func=CSRFAjax.as_view('csrf_ajax'))

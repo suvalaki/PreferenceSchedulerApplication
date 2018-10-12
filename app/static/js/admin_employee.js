@@ -105,17 +105,81 @@ function openModelForm(){
 
 
 function openEmployeeFormAdd(){
-    document.getElementById('function_marker')
-    .value = "add";
+    $('#form_heading').innerText = "Add a new employee";
+ 
+
+    // reset form fields
+    if (('#function_marker').value  != "add"){
+
+        document.getElementById('input_first_name').value = "";
+        document.getElementById('input_last_name').value = "";
+        document.getElementById('input_DoB').value = "";
+        document.getElementById('input_username').value = "";
+        document.getElementById('input_email').value = "";
+        document.getElementById('input_phone').value = "";
+        document.getElementById('input_em_contact').value = "";
+        document.getElementById('input_em_r').value = "";
+        document.getElementById('input_em_phone').value = "";
+        document.getElementById('input_tfn').value = "";
+        document.getElementById('input_ea').value = "";
+        document.getElementById('input_skills').value = "";
+
+    }
+
+    $('#function_marker').value = "add";
+
     //open modal function here
     openModelForm();
     
 }
 
 
-function tableLoader(){
-    
+function openEmployeeEditForm(){
+    $('#form_heading').innerText = "Add a new employee";
+    $('#function_marker').value = "edit";
+
+    //form fields replaced by entry form fields
+
+    //open modal function here
+    openModelForm();
 }
+
+function tableLoader(){
+
+    const fetchUrl = '/admin_employee_table/' 
+
+    fetch(fetchUrl)
+        .then(function(response){
+            return response.json();
+        })
+        .then(function(jsonResponse){
+            $('#employee_table_container').DataTable({
+                data: jsonResponse["data"],
+                rowId: (a) => 'tab_id_' + a[0], //label rows 
+                dom: 'Bftrip', //create button
+                buttons:[{
+                    text: 'Add New Employee',
+                    action:() => openEmployeeFormAdd() 
+                }],
+                columns: [
+                    {
+                        data:[0],
+                        render: (data) =>  '<input type="checkbox" class="table-selection" value="' + data + '"/>'
+                    },
+                    {"data": [0]}, // column names
+                    {"data": [1]}, 
+                    {"data": [2]}, 
+                    {"data": [3]}, 
+                    {
+                        data: [0],
+                        render: (data) =>  '<a class="table-edit" data-id="' + data + '">Edit</a>'
+                    }
+                ]
+            });
+        });
+
+    }
+
 
 $( document ).ready(function(){
 
@@ -142,5 +206,9 @@ $( document ).ready(function(){
             modal.style.display = "none";
         }
     }
+
+
+    // load the table
+    tableLoader();
 
 })
