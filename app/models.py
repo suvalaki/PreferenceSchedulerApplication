@@ -57,10 +57,20 @@ class ShiftPeriods(db.Model):
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(24))
+    last_name = db.Column(db.String(24))
+    gender = db.Column(db.String(1))
+    date_of_birth = db.Column(db.Date()) 
     username = db.Column(db.String(64), unique=True)
     email = db.Column(db.String(64), unique=True)
+    phone_no = db.Column(db.Integer())
+    emergency_contact = db.Column(db.String())
+    emergency_contact_relationship = db.Column(db.String())
+    emergency_contact_phone_no = db.Column(db.Integer())
+    financial_tax_file_number = db.Column(db.String())
     password_hash = db.Column(db.String(64))
     agreement = db.Column(db.Integer, db.ForeignKey('enterpriseagreement.id'))
+
     #agreement = db.relationship('EnterpriseAgreement', backref = 'employee', lazy=True)
     skills = db.relationship('SkillAssignment', backref='employees', lazy='dynamic') 
     preferences = db.relationship('Preference', backref='employees', lazy='dynamic')
