@@ -43,6 +43,11 @@
                     
                     <div class="form-content-row">
                         <div class="form-row-input">
+
+                            <div class="row-header">
+                                Gender
+                            </div>
+
                             <select id="gener_input">
                                 <option value="">Gender</option>
                                 <option value="male">Male</option>
@@ -54,8 +59,12 @@
                     <p>Date of Birth</p>
 
                     <div class="form-content-row">
-                    
+                        
                         <div class="form-row-input">
+                            <div class="row-header">
+                                    Date of Birth
+                            </div>
+    
                             <input id="input_DoB" type="date" >
                         </div>
                     </div>
@@ -64,18 +73,31 @@
 
                     <div class="form-content-row">
                         <div class="form-row-input">
+
+                            <div class="row-header">
+                                    Username
+                            </div>
+
                             <input id="input_username" type="text" placeholder="Username">
                         </div>
                     </div>   
 
                     <div class="form-content-row">
                         <div class="form-row-input">
+
+                            <div class="row-header">
+                                    Email
+                            </div>
+
                             <input id="input_email" type="text" placeholder="Email Address">
                         </div>
                     </div>
 
                     <div class="form-content-row">
                         <div class="form-row-input">
+                            <div class="row-header">
+                                    Contact Number
+                            </div>
                             <input id="input_phone" type="text" placeholder="Phone Number">
                         </div>
                     </div>
@@ -83,22 +105,31 @@
                     <p>Emergency Contact</p>
 
                     <div class="form-content-row">
-                        Emergency Contact Name
+                        
                         <div class="form-row-input">
+                            <div class="row-header">
+                                    Emergency Contact Name
+                            </div>
                             <input id="input_em_contact" type="text" placeholder="Emergency Contact Name">
                         </div>
                     </div>
 
                     <div class="form-content-row">
-                        Emergency Contact Relationship
+                        
                         <div class="form-row-input">
+                            <div class="row-header">
+                                Relationship
+                            </div>
                             <input id="input_em_r" type="text" placeholder="Emergency Contact Relationship">
                         </div>
                     </div>
 
                     <div class="form-content-row">
-                        Emergency Contact Phone
+                    
                         <div class="form-row-input">
+                            <div class="row-header">
+                                    Contact Number
+                            </div>
                             <input id="input_em_phone" type="text" placeholder="Emergency Contact Phone">
                         </div>
                     </div>
@@ -106,17 +137,22 @@
                     <p>Financial Detail</p>
 
                     <div class="form-content-row">
-                        Tax File Number
+                        
                         <div class="form-row-input">
+                            <div class="row-header">
+                                    Tax File Number
+                            </div>
                             <input id="input_tfn" type="text" placeholder="Tax File Number">
                         </div>
                     </div>
 
                     <div class="form-content-row">
-                        Enterprise Agreement
+                        
                         <div class="form-row-input">
-                            <select id="input_ea">
-                                <option value="">Enterprise Agreement</option>
+                            <div class="row-header">
+                                    Enterprise Agreement
+                            </div>
+                            <select id="input_ea" placeholder="">
                                 <!--inject EA here -->
                                 {% for ea in enterprise_agreement %}
 
@@ -131,7 +167,11 @@
 
                     <div class="form-content-row">
                         <div class="form-row-input">
-                            Skillset
+
+                            <div class="row-header skills">
+                                Skills
+                            </div>
+                            
                             <select id="input_skills" multiple>
                                 <!-- inject Skillsets here -->
                                 {% for skill in skills %}
