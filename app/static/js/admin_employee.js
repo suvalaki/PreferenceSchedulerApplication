@@ -190,7 +190,7 @@ function tableLoader(){
                     {"data": [3]}, 
                     {
                         data: [0],
-                        render: (data) =>  '<a class="table-edit" data-id="' + data + '">Edit</a>'
+                        render: (data) =>  '<a href="#" class="table-edit" data-id="' + data + '">Edit</a>'
                     }
                 ]
             });
