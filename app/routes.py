@@ -584,14 +584,13 @@ class AdminEmployee(MethodView):
 
         elif request_data['postMethod'] == 'delete':
 
-            print("post worked")
+            try:
+                self.del_employee(request_data['deleteData'])
+                return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
-            id_to_delete = request_data['deleteData']
-            print(id_to_delete)
+            except:
+                return json.dumps({'success':False}), 403, {'ContentType':'application/json'} 
 
-
-
-            return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
         elif request_data['postMethod'] == 'edit':
             pass
