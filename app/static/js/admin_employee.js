@@ -27,13 +27,12 @@ function update_csrf_after_post(){
         return response.json();
       })
       .then(function(myJson) {
-        console.log(JSON.stringify(myJson));
+        //console.log(JSON.stringify(myJson));
         return myJson
       })     
     .then(function(response){
 
-        console.log(response);
-
+        //console.log(response);
         if(response.success === true){
             _csrf_token.value = response.token;
             _csrf_p.innerText = response.token;
@@ -88,7 +87,7 @@ function postEmployee(){
     postData('/admin_employee/',{postMethod: postRequestType, addData: data,
         _csrf_token: _csrf_token})
         //.then(table.draw())
-        .then(response => console.log(response))
+        //.then(response => console.log(response))
         .then(response => update_csrf_after_post());
         // https://www.tjvantoll.com/2015/09/13/fetch-and-errors/
         //.catch(error => console.log(error));
@@ -97,6 +96,7 @@ function postEmployee(){
 
 
 function tableDeleteRowsRedraw(selected, table){
+    // https://datatables.net/forums/discussion/43162/removing-rows-from-a-table-based-on-a-column-value
 
     table
         .rows( function ( idx, data, node ) {
@@ -127,11 +127,6 @@ function postEmployeeDeleteSelection(table){
         .then(response => update_csrf_after_post());
         
         //.catch(console.log('error on delete'));
-        
-
-
-    // https://datatables.net/forums/discussion/43162/removing-rows-from-a-table-based-on-a-column-value
-
 }
 
 
@@ -266,7 +261,6 @@ function tableLoader(){
 $( document ).ready(function(){
 
     $('#submitNewEmployee').on('click', null, function(){
-        console.log('button pushed');
         postEmployee();
     });   
     
