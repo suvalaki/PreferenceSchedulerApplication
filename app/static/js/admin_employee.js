@@ -95,14 +95,32 @@ function postEmployee(){
 
 }
 
+
+function tableDeleteRowsRedraw(selected, table){
+
+    table
+        .rows( function ( idx, data, node ) {
+            console.log(selected)
+            console.log('rmove')
+            return selected.includes(data[0]) ;
+        } )
+        .remove()
+        .draw();
+    //stop displaying the modal
+    $('#employee_tb-delete_container_modal')[0].style.display = "none";
+
+}
+
+
 function postEmployeeDeleteSelection(table){
+
+
+    console.log(table)
 
     var selected = [];
     $.each($("input[name='selected_id']:checked"), function(){            
-        selected.push($(this).val());
+        selected.push(parseInt($(this).val()));
     });
-
-    console.log(selected);
 
     var postRequestType = "delete";
     var _csrf_token =  document.getElementById('_csrf_token').value;
@@ -110,11 +128,15 @@ function postEmployeeDeleteSelection(table){
     postData('/admin_employee/',{postMethod: postRequestType, deleteData: selected,
         _csrf_token: _csrf_token})
         //.then(table.draw())
-        .then(response => console.log(response))
-        .then(table.draw())
-        .then(response => update_csrf_after_post())
-        .catch(console.log('error on delete'));
+        .then((response) => {tableDeleteRowsRedraw(selected, table)})
+        .then(response => update_csrf_after_post());
         
+        //.catch(console.log('error on delete'));
+        
+
+
+    // https://datatables.net/forums/discussion/43162/removing-rows-from-a-table-based-on-a-column-value
+
 }
 
 
@@ -225,6 +247,8 @@ function tableLoader(){
                 ]
             });
 
+            window.myTable = table;
+
             // add entry event listeners
             $('#add-employee-btn').on('click',null,openEmployeeFormAdd);
 
@@ -234,7 +258,10 @@ function tableLoader(){
             });
 
             // post delete request here
-            $('#deleteSelection').on('click',null, () => {postEmployeeDeleteSelection(table)});
+            $('#deleteSelection').on('click',null, () => {
+                postEmployeeDeleteSelection(table);
+                tableDeleteRowsRedraw([4], table);
+            });
         
         });
 

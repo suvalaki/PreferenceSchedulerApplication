@@ -451,7 +451,7 @@ class AdminEmployee(MethodView):
         .delete(synchronize_session=False)
 
         db.session.query(models.SkillAssignment)\
-        .filter(models.SkillAssignment.shift.in_(id))\
+        .filter(models.SkillAssignment.employee.in_(id))\
         .delete(synchronize_session=False)
 
         db.session.commit()
@@ -584,12 +584,12 @@ class AdminEmployee(MethodView):
 
         elif request_data['postMethod'] == 'delete':
 
-            try:
-                self.del_employee(request_data['deleteData'])
-                return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+            # try:
+            self.del_employee(request_data['deleteData'])
+            return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
-            except:
-                return json.dumps({'success':False}), 403, {'ContentType':'application/json'} 
+            # except:
+            #     return json.dumps({'success':False}), 403, {'ContentType':'application/json'} 
 
 
         elif request_data['postMethod'] == 'edit':
