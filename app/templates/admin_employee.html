@@ -10,6 +10,30 @@
 
 <div id="employee_tb_container">
     
+    <button id="delete-close-btn-open">delete selection</button>
+    <!-- delete selection modal -->
+
+    <div id="employee_tb-delete_container_modal" class="modal">
+        <div id="employee_tb-delete_container_modal-content_container", class="modal-content form active">
+            
+            <span id="delete-close-btn" class="close">&times;</span>
+
+            <div class="form-content-header">
+                <h3 id="delete_heading">Delete Selection</h3>
+            </div>
+
+            <p>
+                Are you sure you wish to delete the selected employees (this cannot be undone later).
+            </p>
+
+            <button id="deleteSelection">
+                <i class="spinner"></i>
+                <span class="state">Submit</span>
+            </button>
+
+        </div>
+    </div>
+
     <!-- the modal containing forms for editing the employee dataset -->
     <div id="employee_tb-form_container_modal" class="modal">
         <div id="employee_tb-form_container_modal-content_container", class="modal-content form active">

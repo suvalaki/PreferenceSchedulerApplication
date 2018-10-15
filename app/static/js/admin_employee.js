@@ -95,9 +95,36 @@ function postEmployee(){
 
 }
 
+function postEmployeeDeleteSelection(table){
+
+    var selected = [];
+    $.each($("input[name='selected_id']:checked"), function(){            
+        selected.push($(this).val());
+    });
+
+    console.log(selected);
+
+    var postRequestType = "delete";
+    var _csrf_token =  document.getElementById('_csrf_token').value;
+
+    postData('/admin_employee/',{postMethod: postRequestType, deleteData: selected,
+        _csrf_token: _csrf_token})
+        //.then(table.draw())
+        .then(response => console.log(response))
+        .then(table.draw())
+        .then(response => update_csrf_after_post())
+        .catch(console.log('error on delete'));
+        
+}
+
 
 function openModelForm(){
     document.getElementById('employee_tb-form_container_modal')
+    .style.display = "block";
+}
+
+function openDeleteForm(){
+    document.getElementById('employee_tb-delete_container_modal')
     .style.display = "block";
 }
 
@@ -178,11 +205,14 @@ function tableLoader(){
                 buttons:[{
                     text: 'Add New Employee',
                     action:() => openEmployeeFormAdd() 
+                },{
+                    text: 'Delete Selected Employees',
+                    action: () => openDeleteForm()
                 }],
                 columns: [
                     {
                         data:[0],
-                        render: (data) =>  '<input type="checkbox" class="table-selection" value="' + data + '"/>'
+                        render: (data) =>  '<input type="checkbox" class="table-selection" name="selected_id" value="' + data + '"/>'
                     },
                     {"data": [0]}, // column names
                     {"data": [1]}, 
@@ -203,14 +233,15 @@ function tableLoader(){
                 openEmployeeEditForm(table, e);
             });
 
+            // post delete request here
+            $('#deleteSelection').on('click',null, () => {postEmployeeDeleteSelection(table)});
+        
         });
 
 
     }
 
 // before the document is ready
-
-
 $( document ).ready(function(){
 
     $('#submitNewEmployee').on('click', null, function(){
@@ -219,30 +250,60 @@ $( document ).ready(function(){
     });   
     
     
-    // Get the <span> element that closes the modal
-    var modal = document.getElementById('employee_tb-form_container_modal');
-    var span = document.getElementsByClassName("close")[0];
+    (() => {
+        // Get the <span> element that closes the modal
+        var modal = document.getElementById('employee_tb-form_container_modal');
+        var span = document.getElementsByClassName("close")[0];
 
 
-    // When the user clicks on <span> (x), close the modal
-    $('#modal-close-btn').on('click',null,function(){
-        $('#employee_tb-form_container_modal')[0].style.display = "none";
-    });
+        // When the user clicks on <span> (x), close the modal
+        $('#modal-close-btn').on('click',null,function(){
+            $('#employee_tb-form_container_modal')[0].style.display = "none";
+        });
 
-    $('#close-btn').on('click',null,function(){
-        $('#employee_tb-form_container_modal')[0].style.display = "none";
-    });
+        $('#close-btn').on('click',null,function(){
+            $('#employee_tb-form_container_modal')[0].style.display = "none";
+        });
 
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
         }
-    }
+    })();
+
+
+    (() => {
+        // Get the <span> element that closes the modal
+        var modal = document.getElementById('employee_tb-delete_container_modal');
+        var span = document.getElementsByClassName("close")[0];
+
+        $('#delete-close-btn-open').on('click',null,function(){
+            $('#employee_tb-delete_container_modal')[0].style.display = "inline-block";
+        });
+
+        // When the user clicks on <span> (x), close the modal
+        $('#delete-close-btn').on('click',null,function(){
+            $('#employee_tb-delete_container_modal')[0].style.display = "none";
+        });
+
+        $('#close-btn').on('click',null,function(){
+            $('#employee_tb-delete_container_modal')[0].style.display = "none";
+        });
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    })();
 
 
     // load the table and its event handlers
     tableLoader();
     
+
 
 })

@@ -191,3 +191,7 @@
       border-bottom-width: 7px;
     
 }
+
+#employee_tb-delete_container_modal-content_container {
+    height: 240px;
+}

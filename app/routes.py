@@ -521,23 +521,26 @@ class AdminEmployee(MethodView):
     def post(self):
 
         request_data = request.get_json()
+        print(request_data['postMethod'])
         # test wtforms multidict mapping without html jinja injection
 
         # Data is correct
 
-        first_name = request_data['addData']["first_name"]
-        last_name = request_data['addData']["last_name"]
-        gender = request_data['addData']["gender"]
-        dob = request_data['addData']["dob"]
-        username = request_data['addData']["username"]
-        email = request_data['addData']["email"]
-        phone =  request_data['addData']["phone"]
-        em_contact =  request_data['addData']["em_contact"]
-        em_rel =  request_data['addData']["em_rel"]
-        em_phone  = request_data['addData']["em_phone"]
-        fin_tfn  = request_data['addData']["fin_tfn"]
-        ea = request_data['addData']["ea"]
-        skills = request_data['addData']["skills"]
+        if request_data['postMethod'] in ['add', 'edit']:
+
+            first_name = request_data['addData']["first_name"]
+            last_name = request_data['addData']["last_name"]
+            gender = request_data['addData']["gender"]
+            dob = request_data['addData']["dob"]
+            username = request_data['addData']["username"]
+            email = request_data['addData']["email"]
+            phone =  request_data['addData']["phone"]
+            em_contact =  request_data['addData']["em_contact"]
+            em_rel =  request_data['addData']["em_rel"]
+            em_phone  = request_data['addData']["em_phone"]
+            fin_tfn  = request_data['addData']["fin_tfn"]
+            ea = request_data['addData']["ea"]
+            skills = request_data['addData']["skills"]
 
         if request_data['postMethod'] == 'add':
 
@@ -580,7 +583,16 @@ class AdminEmployee(MethodView):
                 return json.dumps({'success':False}), 403, {'ContentType':'application/json'} 
 
         elif request_data['postMethod'] == 'delete':
-            pass
+
+            print("post worked")
+
+            id_to_delete = request_data['deleteData']
+            print(id_to_delete)
+
+
+
+            return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+
         elif request_data['postMethod'] == 'edit':
             pass
 
@@ -597,7 +609,7 @@ class AJAX_AdminEmployeeTable(MethodView):
             "SELECT id, username, email, agreement FROM employee"
         )]
 
-        return json.jsonify(data = employees)
+        return json.dumps({'success':True, 'data':employees}), 200, {'ContentType':'application/json'} 
 
 
 
