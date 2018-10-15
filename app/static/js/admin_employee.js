@@ -100,8 +100,6 @@ function tableDeleteRowsRedraw(selected, table){
 
     table
         .rows( function ( idx, data, node ) {
-            console.log(selected)
-            console.log('rmove')
             return selected.includes(data[0]) ;
         } )
         .remove()
@@ -113,9 +111,6 @@ function tableDeleteRowsRedraw(selected, table){
 
 
 function postEmployeeDeleteSelection(table){
-
-
-    console.log(table)
 
     var selected = [];
     $.each($("input[name='selected_id']:checked"), function(){            
@@ -260,7 +255,6 @@ function tableLoader(){
             // post delete request here
             $('#deleteSelection').on('click',null, () => {
                 postEmployeeDeleteSelection(table);
-                tableDeleteRowsRedraw([4], table);
             });
         
         });
