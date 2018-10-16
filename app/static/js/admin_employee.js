@@ -95,6 +95,7 @@ function postEmployee(){
 }
 
 
+
 function tableDeleteRowsRedraw(selected, table){
     // https://datatables.net/forums/discussion/43162/removing-rows-from-a-table-based-on-a-column-value
 
@@ -322,3 +323,9 @@ $( document ).ready(function(){
 
 
 })
+
+
+// TODO 
+// REDRAW TABLE AFTER ADD and edit
+// more validators for the data tpes 
+// give some indication that delete, edit and add has been successfull

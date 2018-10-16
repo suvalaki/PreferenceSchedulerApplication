@@ -566,6 +566,10 @@ class AdminEmployee(MethodView):
 
             #validate errors - return errors
             if add_validator.validate() == False:
+
+                print('validator Error')
+                print(add_validator.errors)
+
                 return json.dumps({'success':False, \
                     'errors':add_validator.errors }), \
                     400, {'ContentType':'application/json'} 
