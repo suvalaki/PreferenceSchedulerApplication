@@ -217,7 +217,7 @@ function tableLoader(){
                 dom: 'Bftrip', //create button
                 buttons:[{
                     text: 'Add New Employee',
-                    action:() => openEmployeeFormAdd() 
+                    action:() => openEmployeeFormAdd(), 
                 },{
                     text: 'Delete Selected Employees',
                     action: () => openDeleteForm()

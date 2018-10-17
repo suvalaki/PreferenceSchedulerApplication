@@ -181,8 +181,7 @@ FROM (
     ON employee.id = skill_slice.emp
 ) as employee_skill_slice
 ORDER BY id2
-""", {"param": str(x)}
-                                                         )] for x in roles])
+""", {"param": str(x)})] for x in roles])
 
 
 # Get enterprise agreements

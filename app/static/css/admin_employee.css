@@ -192,6 +192,47 @@
     
 }
 
+
+.form button:hover {
+    background: #548dbe; 
+}
+
+
 #employee_tb-delete_container_modal-content_container {
     height: 240px;
+}
+
+a.table-edit {
+    background: #337ab7;
+    font-size: 1em;
+    color: #fff;
+    display: block;
+    border: none;
+    position: relative;
+    border-radius: 0 0 2px 2px;
+    transform: rotateZ(0deg);
+    padding: 1px 5px 1px 5px;
+    transition: all 0.1s ease-out;
+      border-bottom-width: 7px;
+    
+}
+
+.dt-button {
+        margin: 2px;
+        background: #337ab7;
+        font-size: 1em;
+        color: #fff;
+        border: none;
+        position: relative;
+        border-radius: 0 0 2px 2px;
+        transform: rotateZ(0deg);
+        padding: 5px 10px 5px 10px;
+        transition: all 0.1s ease-out;
+        border-bottom-width: 7px;
+        border: 0px solid rgba(0,0,0,0.1);
+        
+}
+
+.dt-button:hover {
+    background: #548dbe; 
 }
