@@ -282,11 +282,14 @@ $( document ).ready(function(){
         });
 
         // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+
+        $('#employee_tb-form_container_modal').on('click',null, function(e){
+            if(e.target == this){ // only continue if the target itself has been clicked
+                $('#employee_tb-form_container_modal')[0].style.display = "none";
             }
-        }
+            
+        });
+
     })();
 
 
@@ -309,12 +312,13 @@ $( document ).ready(function(){
         });
 
         // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+
+        $('#employee_tb-delete_container_modal').on('click',null, function(e){
+            if(e.target == this){ // only continue if the target itself has been clicked
+                $('#employee_tb-delete_container_modal')[0].style.display = "none";
             }
-        }
-    })();
+            
+        });
 
 
     // load the table and its event handlers
