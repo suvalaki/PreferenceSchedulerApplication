@@ -6,3 +6,7 @@
     - set preference views
     - shifts edit view
     - extend jsgantt to accept variable period lengths
+
+
+Usefull Links:
+Json form builder: https://github.com/jsonform/jsonform , http://json-schema.org/
