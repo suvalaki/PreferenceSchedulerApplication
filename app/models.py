@@ -2,17 +2,35 @@ from time import time
 from flask import current_app, url_for
 from flask_login import UserMixin
 
-from app import db
+from app import db, ma
+
 
 # https://stackoverflow.com/questions/25632905/flask-sqlalchemy-relationship
 # relationship goes on the ONE SIDE. 
 # understanding backref http://docs.sqlalchemy.org/en/latest/orm/backref.html
 # backref second argument describes a callback to the join. not the join it self. It is a REFERENCE in the other table to the relationship
 
+table_classes = ['EnterpriseAgreement','Skill','Period','Shift','ShiftPeriods',
+    'ShiftPeriods','Employee','Preference','SkillAssignment',
+    'ScheduleRequirement','ScheduleAllocation']
+
+# https://stackoverflow.com/questions/42891152/how-to-dynamically-generate-marshmallow-schemas-for-sqlalchemy-models
+
+import pprint as pp
+from alchemyjsonschema import SchemaFactory
+from alchemyjsonschema import NoForeignKeyWalker
+
+
+def add_schema(cls):
+    factory = SchemaFactory(NoForeignKeyWalker, container_factory = dict)
+    cls.jsonSchema = factory(cls) 
+    return cls
+
 class Cal123asdas(db.Model):
     #__tablename__ = 'usasdaer'
     id = db.Column(db.Integer, primary_key=True)
 
+@add_schema
 class EnterpriseAgreement(db.Model):
 
     __tablename__ = "enterpriseagreement"
@@ -26,6 +44,23 @@ class EnterpriseAgreement(db.Model):
     employees = db.relationship("Employee", backref = 'agreements', lazy='dynamic') 
     #employees =  db.Column(db.Integer, db.ForeignKey('employee.id'))
 
+    jsonForm = """
+    {
+        "schema": {
+            "id": {"type": "integer", "required": true},
+            "name": {"type": "string", "maxLength": 8, "required": true},
+            "min_periods": {"type": "integer", "required": true},
+            "max_periods": {"type": "integer", "required": true},
+            "max_periods_overtime": {"type": "integer", "required": true},
+            "wage": {"type": "number", "required": true},
+            "wage_overtime": {"type": "number", "required": true}
+    },
+
+
+    """
+
+
+@add_schema
 class Skill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(8), unique=True)
@@ -33,6 +68,7 @@ class Skill(db.Model):
     shedule_requirements = db.relationship("ScheduleRequirement", backref="skills", lazy='dynamic')
     #shedule_allocation = db.relationship('ScheduleAllocation', backref='skills', lazy='dynamic')
 
+@add_schema
 class Period(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
@@ -43,6 +79,7 @@ class Period(db.Model):
     shift_periods = db.relationship('ShiftPeriods', backref="periods", lazy='dynamic') 
     schedule_requirements = db.relationship('ScheduleRequirement', backref="periods", lazy='dynamic') 
 
+@add_schema
 class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_period = db.Column(db.Integer, db.ForeignKey('period.id'))
@@ -50,11 +87,13 @@ class Shift(db.Model):
     shedule_allocation = db.relationship('ScheduleAllocation', backref='shifts', lazy='dynamic')
     preferences = db.relationship('Preference', backref='shifts', lazy='dynamic')
 
+@add_schema
 class ShiftPeriods(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     period = db.Column(db.Integer, db.ForeignKey('period.id'))
     shift = db.Column(db.Integer, db.ForeignKey('shift.id'))
 
+@add_schema
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(24))
@@ -76,22 +115,26 @@ class Employee(db.Model):
     preferences = db.relationship('Preference', backref='employees', lazy='dynamic')
     schedule_allocation = db.relationship('ScheduleAllocation', backref='employees', lazy='dynamic')
 
+@add_schema
 class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     shift = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
     preference_level = db.Column(db.Integer)
 
+@add_schema
 class SkillAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     skill = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
     employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
 
+@add_schema
 class ScheduleRequirement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     period = db.Column(db.Integer, db.ForeignKey('period.id'), nullable=False)
     requirement = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
 
+@add_schema
 class ScheduleAllocation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
@@ -99,3 +142,4 @@ class ScheduleAllocation(db.Model):
     skills = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
     period = db.Column(db.Integer, db.ForeignKey('period.id'), nullable=False)
     is_overtime = db.Column(db.Boolean)
+

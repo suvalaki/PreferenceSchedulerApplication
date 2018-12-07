@@ -10,3 +10,5 @@
 
 Usefull Links:
 Json form builder: https://github.com/jsonform/jsonform , http://json-schema.org/
+https://jsonform.github.io/jsonform/playground/index.html?example=fields-range
+https://stackoverflow.com/questions/13611614/submit-the-form-using-ajax

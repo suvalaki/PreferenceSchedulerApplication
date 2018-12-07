@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_marshmallow import Marshmallow
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -28,19 +29,29 @@ class Config(object):
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 meta = db.metadata
 engine = db.engine
+
+from app import models
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-from app import models
-
-migrate = Migrate(app, db)
 
 from app import routes
+
+def register_extensions(app=app):
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+        db.session.commit()
+        ma.init_app(app)
+
+
 @app.shell_context_processor
 def make_shell_context():
-    return {'db': db, 'meta':meta, 'models': models}
+    return {'db': db, 'ma':ma, 'meta':meta, 'models': models}
 
 #metadata is in db.Model

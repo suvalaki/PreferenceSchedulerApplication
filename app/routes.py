@@ -7,7 +7,7 @@ from flask import render_template, request, json, session, abort
 from flask.views import View, MethodView
 from app import app
 #app and session are defined in __init__.py . everything in init.py gets defined when referencing the containing folder in python
-from app import db, models
+from app import db, models, json_schema
 import random
 import string
 import matplotlib
@@ -632,9 +632,6 @@ class CSRFAjax(MethodView):
             return json.dumps({'success':False}), \
                 400, {'ContentType':'application/json'}
 
-
-
-
 app.add_url_rule('/index/', view_func=PrimaryView.as_view('index'))
 app.add_url_rule('/chart/', view_func=PeriodChart.as_view('period_chart'))
 app.add_url_rule('/gantt/', view_func=ShiftGantt.as_view('gantt_chart'))
@@ -652,3 +649,12 @@ app.add_url_rule('/admin_employee_table/', view_func=AJAX_AdminEmployeeTable.as_
 
 # helper AJAX views
 app.add_url_rule('/csrf_ajax/', view_func=CSRFAjax.as_view('csrf_ajax'))
+
+# temp views 
+
+
+#JSON view of each table schema
+# https://stackoverflow.com/questions/46741744/flask-python-pass-input-as-parameter-to-function-of-different-route-with-fixe
+@app.route('/json_table_schema/<word>')
+def create_Json_schema_views(word):
+    return str(getattr(getattr(models, word),'jsonSchema'))
